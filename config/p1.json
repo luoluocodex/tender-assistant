@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "baselineFile": "config/p0-baseline.json",
+  "sitesFile": "config/sites.json",
+  "outputDir": "output/playwright",
+  "headless": false,
+  "maxPages": 120,
+  "maxDetailsPerSite": 20,
+  "minIntervalMs": 6000,
+  "navigationTimeoutMs": 45000,
+  "actionTimeoutMs": 15000,
+  "maxRunMinutes": 20,
+  "retention": "manual-review-no-automatic-deletion"
+}

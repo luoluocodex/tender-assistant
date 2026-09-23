@@ -11,33 +11,73 @@
       "historicalObservationDate": "2026-09-23",
       "historicalObservation": "前期在 Codex 浏览器内未执行登录即可搜索软件及打开样本详情；不等于独立 Playwright 已验证",
       "capabilities": {
-        "publicSearch": "observed-in-prior-browser-session",
-        "scriptedPagination": "not-tested",
-        "completeBodyExtraction": "not-tested-prior-snapshot-gap",
+        "publicSearch": "verified-headed-formal-query-with-broad-segmented-matches",
+        "scriptedPagination": "partial-49-pages-page-50-http-429",
+        "completeBodyExtraction": "partial-14-complete-2-partial-4-failed-of-20-details",
         "attachmentDownload": "not-tested",
         "authenticatedSessionReuse": "not-tested",
         "headlessMode": "not-tested"
       },
-      "p1Priority": "定位正文在屏幕可见但当前文本快照不完整的问题"
+      "p1Verification": {
+        "observedDate": "2026-09-23",
+        "mode": "headed-playwright-library",
+        "status": "partial",
+        "formalKeyword": "网站开发",
+        "pagesChecked": 49,
+        "rowsObserved": 490,
+        "uniqueCandidates": 488,
+        "totalChangedDuringRun": true,
+        "detailsChecked": 20,
+        "detailsComplete": 14,
+        "report": "output/playwright/2026-09-23T11-05-57-738Z-formal/report.json",
+        "findings": [
+          "部分可见正文位于封闭 Shadow DOM，已通过公告容器内的 Chromium CDP 读取并保留独立证据",
+          "站点采用分词查询，候选不是精确短语或业务相关性结果",
+          "已验证的 v3 A/D/R 路由有实现，其他详情路由仍有缺口",
+          "实测列表第 50 页 HTTP 429；随后将操作间隔从 1.8 秒提高至 6 秒并增加停止规则，修改后的广东稳定性尚未复测"
+        ]
+      },
+      "p1Priority": "待站点恢复后复核低频分页与查询总数变化；补齐未支持路由及不完整正文"
     },
     {
       "id": "ccgp",
       "name": "中国政府采购网",
       "entryUrl": "https://www.ccgp.gov.cn/",
       "searchEntryUrl": "https://search.ccgp.gov.cn/",
-      "regionPlan": "显式选择广东；不得只因域名为全国站就采集全国结果",
+      "regionPlan": "广东省由广东（44 not 4403）和深圳（4403）两个地区查询合并覆盖；不采集全国结果",
       "queryPlan": "网站开发；最近 7 个自然日；分别核验标题与全文搜索的支持情况",
       "historicalObservationDate": "2026-09-23",
       "historicalObservation": "前期在 Codex 浏览器内未执行登录即可搜索软件并读取样本正文；样本附件指向地方系统",
       "capabilities": {
-        "publicSearch": "observed-in-prior-browser-session",
-        "scriptedPagination": "not-tested",
-        "completeBodyExtraction": "sample-body-observed-script-not-tested",
+        "publicSearch": "verified-headed-formal-title-and-fulltext-zero-results",
+        "scriptedPagination": "verified-diagnostic-terminal-pages-guangdong-7-shenzhen-8",
+        "completeBodyExtraction": "verified-20-diagnostic-details-formal-no-samples",
         "attachmentDownload": "not-tested",
         "authenticatedSessionReuse": "not-tested",
         "headlessMode": "not-tested"
       },
-      "p1Priority": "验证广东地区过滤、日期边界与分页"
+      "p1Verification": {
+        "observedDate": "2026-09-23",
+        "mode": "headed-playwright-library",
+        "status": "formal-query-complete-business-detail-coverage-missing",
+        "formalKeyword": "网站开发",
+        "formalQueryCount": 4,
+        "formalCandidates": 0,
+        "formalReport": "output/playwright/2026-09-23T11-05-57-738Z-formal/report.json",
+        "diagnosticKeyword": "软件",
+        "diagnosticPages": { "guangdong": 7, "shenzhen": 8 },
+        "diagnosticCandidates": { "guangdong": 136, "shenzhen": 158 },
+        "diagnosticDetailsComplete": 20,
+        "diagnosticDetailsReport": "output/playwright/2026-09-23T11-19-09-863Z-diagnostic/report.json",
+        "diagnosticPaginationReport": "output/playwright/2026-09-23T11-22-07-553Z-diagnostic/report.json",
+        "findings": [
+          "页面回显验证广东/深圳地区、标题/全文方式、显式日期和关键词；默认近一周不作为日期依据",
+          "深圳结果的列表地区可能仍显示省级广东，须结合 zoneId 判断",
+          "下一页使用脚本提交；已修复直接导航 javascript:void(0) 的回归并复测至末页",
+          "20 份详情和末页验证来自独立诊断运行，诊断不计入正式业务成果"
+        ]
+      },
+      "p1Priority": "保持正式零结果记录；待正式业务有样本后验证搜索到详情链路"
     }
   ],
   "newOriginPolicy": "从真实公告确认附件或交易系统的来源后再登记；不自动扩展为全省所有交易系统"
