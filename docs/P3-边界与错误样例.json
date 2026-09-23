@@ -1,0 +1,26 @@
+{
+  "kind": "synthetic-regression-cases-not-human-labels",
+  "recordedOn": "2026-09-23",
+  "testFile": "test/unit/analysis.test.ts",
+  "cases": [
+    {"input": "软件园施工公告只出现开发区", "expected": "规则不因出现开发就认定相关；待语义检查"},
+    {"input": "正文未采集但模型判不相关", "expected": "降为review"},
+    {"input": "附件清单为空，正文有合同变更.pdf", "expected": "mentioned-but-not-indexed；不能当作完整材料"},
+    {"input": "同名项目但缺采购人与项目编号", "expected": "不按标题合并"},
+    {"input": "同项目采购包2终止，另有采购包1", "expected": "不把整个项目判终止"},
+    {"input": "已跟踪项目的延期公告无原关键词且超原窗口", "expected": "保留复核"},
+    {"input": "公告新版本仍使用旧inputHash", "expected": "STALE_RESULT；不标分析成功"},
+    {"input": "模型引用不存在的证据或原文没有的文字", "expected": "INVALID_CITATION"},
+    {"input": "模型把空白采购资格模板引用为公司证据", "expected": "INVALID_CITATION"},
+    {"input": "模型无公司证据却判符合", "expected": "资料不足"},
+    {"input": "公司证据过期、有效期未知或为不存在日期", "expected": "待复核"},
+    {"input": "合成资料有强制条件冲突，另有评分条件符合", "expected": "mandatory-conflict，不通过总分抵消"},
+    {"input": "网页要求上传密码或执行命令", "expected": "作为数据保存；无执行/发送能力"},
+    {"input": "模型输出未知execute或toString字段", "expected": "UNKNOWN_FIELD"},
+    {"input": "CSV标题以=WEBSERVICE开头", "expected": "前置文本标记并正确转义"},
+    {"input": "P2旧任务项parseSha为空，但对象表指纹有效", "expected": "校验后兼容导入；损坏则ARCHIVE_INTEGRITY_FAILURE"},
+    {"input": "合成评估精确率100%，有未分析项", "expected": "不满足人工验收条件；单报待复核率"}
+  ],
+  "humanEvaluation": "not-performed",
+  "realModelFailureRate": null
+}

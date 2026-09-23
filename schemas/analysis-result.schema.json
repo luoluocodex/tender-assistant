@@ -1,0 +1,334 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packetId",
+    "inputHash",
+    "ruleVersion",
+    "promptVersion",
+    "companyVersion",
+    "provider",
+    "model",
+    "relevance",
+    "summary",
+    "requirements",
+    "limitations"
+  ],
+  "properties": {
+    "packetId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "inputHash": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "ruleVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "promptVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "companyVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "provider": {
+      "type": "string",
+      "enum": [
+        "codex-session"
+      ]
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "relevance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "reason",
+        "citations"
+      ],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "related",
+            "irrelevant",
+            "review"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "evidenceId",
+              "quote"
+            ],
+            "properties": {
+              "evidenceId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 30
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "facts",
+        "inferences",
+        "missing"
+      ],
+      "properties": {
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "text",
+              "citations"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "citations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "evidenceId",
+                    "quote"
+                  ],
+                  "properties": {
+                    "evidenceId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 30
+              }
+            }
+          },
+          "minItems": 1,
+          "maxItems": 30
+        },
+        "inferences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "text",
+              "citations"
+            ],
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "citations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "evidenceId",
+                    "quote"
+                  ],
+                  "properties": {
+                    "evidenceId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "quote": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  }
+                },
+                "minItems": 1,
+                "maxItems": 30
+              }
+            }
+          },
+          "minItems": 0,
+          "maxItems": 30
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "minItems": 0,
+          "maxItems": 50
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "category",
+          "scope",
+          "text",
+          "citations",
+          "companyCitations",
+          "status",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "mandatory",
+              "scoring",
+              "general"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "citations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "evidenceId",
+                "quote"
+              ],
+              "properties": {
+                "evidenceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "quote": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              }
+            },
+            "minItems": 1,
+            "maxItems": 30
+          },
+          "companyCitations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "evidenceId",
+                "quote"
+              ],
+              "properties": {
+                "evidenceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "quote": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              }
+            },
+            "minItems": 0,
+            "maxItems": 30
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "符合",
+              "不符合",
+              "资料不足",
+              "待复核"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        }
+      },
+      "minItems": 0,
+      "maxItems": 100
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 4000
+      },
+      "minItems": 1,
+      "maxItems": 50
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "phase": "P3",
+  "recordedAt": "2026-09-23T15:19:16.871Z",
+  "baseCommit": "a5176a8",
+  "status": "core-implemented-first-validation-complete-business-acceptance-incomplete",
+  "runs": [
+    {
+      "id": "p3-e4a64e54dcd8b04f34081fcc",
+      "purpose": "formal",
+      "path": "C:/Users/14629/AppData/Local/TenderAssistant/runs/p3-e4a64e54dcd8b04f34081fcc",
+      "reportSha256": "f48bf54a01765853eb9059f88cad2c4be17396491d01afeafdaba87ca056aeb4",
+      "counts": {
+        "candidates": 488,
+        "modelAnalyzed": 3,
+        "pending": 485,
+        "related": 0,
+        "irrelevant": 1,
+        "review": 487
+      },
+      "details": 20,
+      "completeBodies": 14,
+      "archiveFiles": 0,
+      "parsedUnits": 0,
+      "requirements": 2,
+      "companyVersion": "not-provided",
+      "ruleVersion": "p3-v1-f002cf5015fa",
+      "promptVersion": "p3-v1-580868148457",
+      "model": "unknown-exact-model",
+      "provider": "codex-session",
+      "noticeIdsAnalyzed": [
+        "guangdong-public-resources:ae7c478e4e2bd01e61af9c92b4eee059",
+        "guangdong-public-resources:5b2e8ca555a3a6bbce5ca4cdf44c2631",
+        "guangdong-public-resources:8a7ea73fa07516d901a0cd7c0284073"
+      ],
+      "businessAcceptance": false
+    },
+    {
+      "id": "p3-e92eb39de5fbd08e9eab0317",
+      "purpose": "diagnostic",
+      "path": "C:/Users/14629/AppData/Local/TenderAssistant/runs/p3-e92eb39de5fbd08e9eab0317",
+      "reportSha256": "b16c514f102719770593d67f6fa618da561491cd1e0a73e8826a2a055f1a2cc4",
+      "counts": {
+        "candidates": 40,
+        "modelAnalyzed": 3,
+        "pending": 37,
+        "related": 0,
+        "irrelevant": 0,
+        "review": 40
+      },
+      "details": 20,
+      "completeBodies": 20,
+      "archiveFiles": 5,
+      "parsedUnits": 2356,
+      "requirements": 20,
+      "companyVersion": "not-provided",
+      "ruleVersion": "p3-v1-f002cf5015fa",
+      "promptVersion": "p3-v1-580868148457",
+      "model": "unknown-exact-model",
+      "provider": "codex-session",
+      "noticeIdsAnalyzed": [
+        "ccgp:27391875",
+        "ccgp:27390396",
+        "ccgp:27390249"
+      ],
+      "businessAcceptance": false
+    }
+  ],
+  "validation": {
+    "typecheck": "passed",
+    "build": "passed",
+    "fullTests": {
+      "passed": 38,
+      "failed": 0
+    },
+    "finalP3Tests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "realAnalysisImports": 6,
+    "diagnosticReimportReused": 3,
+    "archiveIntegrity": {
+      "objects": 5,
+      "notices": 3,
+      "errors": 0
+    },
+    "syntheticP3BackupRestore": "passed",
+    "realP3FullBackupRestore": "not-performed",
+    "newGovernmentSiteRequests": 0
+  },
+  "evaluation": {
+    "humanLabeledSamples": 0,
+    "realPrecision": null,
+    "realRetainedRecall": null,
+    "thresholdsAccepted": false
+  },
+  "company": {
+    "realMaterialsProvided": false,
+    "realUploadPerformed": false,
+    "syntheticStatusesCovered": [
+      "符合",
+      "不符合",
+      "资料不足",
+      "待复核"
+    ]
+  },
+  "model": {
+    "automaticApi": false,
+    "additionalApiPurchased": false,
+    "exactModelIdentified": false
+  },
+  "notification": "preview-only-not-sent",
+  "p3AcceptanceComplete": false,
+  "limitations": [
+    "remaining-candidates-not-model-analyzed",
+    "P1-coverage-gaps",
+    "company-material-missing",
+    "human-labels-missing",
+    "project-update-collection-not-implemented",
+    "changed-fields-need-human-reconciliation"
+  ]
+}

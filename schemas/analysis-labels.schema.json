@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "reviewer",
+    "labels"
+  ],
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "human",
+        "synthetic"
+      ]
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "packetId",
+          "inputHash",
+          "label",
+          "note"
+        ],
+        "properties": {
+          "packetId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "inputHash": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "label": {
+            "type": "string",
+            "enum": [
+              "related",
+              "irrelevant"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        }
+      },
+      "minItems": 1,
+      "maxItems": 5000
+    }
+  }
+}
