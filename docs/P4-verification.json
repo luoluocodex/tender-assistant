@@ -1,0 +1,74 @@
+{
+  "recordedAt": "2026-09-23T15:40:20.695Z",
+  "phase": "P4",
+  "projectRoot": "D:/creator/coding_project/tender-assistant",
+  "installedSkill": "C:/Users/14629/.codex/skills/tender-assistant",
+  "verification": "current-codex-session-explicit-skill-read-and-command-workflow",
+  "automaticSkillDiscoveryVerified": false,
+  "freshGovernmentCollection": false,
+  "wrapperAndStandaloneIdentical": true,
+  "formal": {
+    "runId": "p3-e4a64e54dcd8b04f34081fcc",
+    "counts": {
+      "candidates": 488,
+      "modelAnalyzed": 4,
+      "pending": 484,
+      "related": 0,
+      "irrelevant": 2,
+      "review": 486
+    },
+    "purpose": "formal"
+  },
+  "diagnostic": {
+    "runId": "p3-e92eb39de5fbd08e9eab0317",
+    "counts": {
+      "candidates": 40,
+      "modelAnalyzed": 3,
+      "pending": 37,
+      "related": 0,
+      "irrelevant": 0,
+      "review": 40
+    },
+    "purpose": "diagnostic"
+  },
+  "queue": {
+    "pending": 484,
+    "ready": 10,
+    "deferred": 474
+  },
+  "newlyAnalyzed": {
+    "packetId": "p3-c2580439a6c947dab6ca342b",
+    "purpose": "formal",
+    "evidenceUnitsRead": 2,
+    "provider": "codex-session",
+    "model": "unknown-exact-model"
+  },
+  "tests": {
+    "command": "pnpm test",
+    "passed": 46,
+    "failed": 0,
+    "p4Added": 8
+  },
+  "evidence": {
+    "formal": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p4-entry/formal.json",
+      "sha256": "aef4de7996bb63ff42b1b39b8e3bf281650b2aa83af928f13c617de64128c95c"
+    },
+    "diagnostic": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p4-entry/diagnostic.json",
+      "sha256": "6053a985f6f1b15d9c3537caeed13e6c1002baa6693dc4793b529686d4b6e421"
+    },
+    "queue": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p4-entry/queue.json",
+      "sha256": "6ee83a854076362692d683a58b5c054a00221ad33dce4d50c424f542aacb384e"
+    },
+    "doctor": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p4-entry/doctor.json",
+      "sha256": "6e4999ebe8c4eb4e538561fa411e068b2e0a32ed9ba1b970084c320bc09af97c"
+    },
+    "archive": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p4-entry/archive.json",
+      "sha256": "e9967ffed8c425c0e96fba0b775c195aa0c3a664a5991d3fc6e38523005ef58c"
+    }
+  }
+}

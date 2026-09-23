@@ -1,0 +1,4 @@
+interface:
+  display_name: "招投标助手"
+  short_description: "检索广东招投标、归档附件并依据原文生成项目摘要与资格复核清单"
+  default_prompt: "使用 $tender-assistant 查看最近一次正式检索结果，说明已分析数量、材料缺口和需要人工复核的项目。"

@@ -8,7 +8,9 @@
 
 按用户后续指令继续实现了 **P2 登录会话、附件解析和本地归档**。5 份真实公开附件已下载解析并归档，重跑复用与备份恢复已验证。真实账号登录、跨日复用、CA/证书仍未验证；本轮样本无需登录，不把受控会话测试当作真实认证成功。
 
-**P3 核心分析流程与首轮验证已实现，完整验收未通过。** 现有 488 份正式候选和 40 份诊断候选已生成清单；当前 Codex 会话对其中 6 份公告完成初步分析并校验导入，5 份 P2 附件进入证据包。剩余候选明确标待分析，真实公司资料与人工标注集尚缺，不宣称全量 AI 分析或业务准确率达标。
+**P3 核心分析流程与首轮验证已实现，完整验收未通过。** 现有 488 份正式候选和 40 份诊断候选已生成清单；P3 首轮对其中 6 份公告完成初步分析并校验导入，5 份 P2 附件进入证据包。剩余候选明确标待分析，真实公司资料与人工标注集尚缺，不宣称全量 AI 分析或业务准确率达标。
+
+**P4 Codex 技能与统一命令已实现并安装。** 已通过当前会话显式读取技能、调用脚本、分析真实公告并导入结果的闭环；独立命令与技能输出一致。P4 新增 1 份正式公告初步分析，累计正式 4 份、诊断 3 份；新会话自动发现/自动选择技能尚未实测。P1/P3 验收缺口仍保留。
 
 ## 文档与配置
 
@@ -16,6 +18,7 @@
 - [P1 执行记录](D:/creator/coding_project/tender-assistant/docs/P1-两站公开采集验证.md)：查询结果、关键发现、验证证据与未覆盖项。
 - [P2 执行记录](D:/creator/coding_project/tender-assistant/docs/P2-登录附件与归档.md)：真实附件、会话边界、归档结构、恢复操作与验收记录。
 - [P3 执行记录](D:/creator/coding_project/tender-assistant/docs/P3-过滤去重与AI分析.md)：规则、公告版本、提示词、摘要、资格检查、实际成绩与待验收项。
+- [P4 执行记录](D:/creator/coding_project/tender-assistant/docs/P4-Codex技能与统一入口.md)：技能位置、自然语言用法、命令协议、输出样例、安装更新和卸载。
 - [执行方案](D:/creator/coding_project/tender-assistant/docs/招投标信息助手执行方案.md)：P0—P6 的总体实施计划。
 - [首轮配置基线](D:/creator/coding_project/tender-assistant/config/p0-baseline.json)：网站开发、广东、最近 7 天、手动、通知预览。
 - [站点能力登记](D:/creator/coding_project/tender-assistant/config/sites.json)：区分前期浏览观察、P1 独立脚本实测和仍未验证的能力。
@@ -104,7 +107,7 @@ pnpm run archive:p2 --help
 
 P1 命令仍只采集公开列表和正文；P2 命令负责附件与归档，两者分开运行。未知详情模板、正文缺失、查询不完整均保留明确状态。P2 尚未验证真实认证、跨日会话、CA/UKey 和无头模式；扫描件、加密、RAR/其他不支持格式返回明确状态，不自动 OCR 或破解密码。
 
-P1 的限流与模板缺口仍需补齐。P3 已有确定性规则和会话分析闭环，但真实公司匹配、人工标注验收、批量 AI 分析和独立的项目更新采集尚未完成。外部通知与 P4 宿主 Skill 封装未实施。附件能解析不等于内容完整、业务相关或满足投标资格。
+P1 的限流与模板缺口仍需补齐。P3 已有确定性规则和会话分析闭环，但真实公司匹配、人工标注验收、批量 AI 分析和独立的项目更新采集尚未完成。P4 已封装 Codex 入口；WorkBuddy 入口、外部通知及周期调度未实施。附件能解析不等于内容完整、业务相关或满足投标资格。
 
 ## P3 使用入口
 
@@ -117,3 +120,27 @@ pnpm run analyze:p3 --run p3-e4a64e54dcd8b04f34081fcc --render
 `--prepare` 生成证据包及 JSON/CSV/Markdown 清单；由当前 Codex 会话按 `prompts/` 进行分析后，以 `--import` 校验导入。程序不会自动调用模型。输出保留相关性、公告阶段、材料完整性、待分析状态和公司资料缺口。`--previous` 与 `--track`、合成公司资料及人工标签评估的完整说明见 P3 执行记录。
 
 退出码 `0` 仅表示当前步骤成功，配置/输入/校验失败为 `1`，不表示 P3 验收通过。业务状态应读取报告中的 `modelStatus`、`coverage`、`eligibility` 和 `p3AcceptanceComplete`。
+
+## P4 使用入口
+
+已安装本机技能：`C:\Users\14629\.codex\skills\tender-assistant`，源文件位于 `skills/tender-assistant/`。可在 Codex 输入：
+
+> 使用 $tender-assistant 查看最近一次正式检索结果，说明已分析数量和材料缺口。
+
+当前会话通过显式读取技能验证；若新会话仍未列出技能，可先使用下面的确定性入口。不要因技能尚未被自动发现而重复采集。
+
+```powershell
+# 在项目根目录执行；原有 P1/P2/P3 命令继续可用
+pnpm run assistant doctor
+pnpm run assistant results --limit 5
+pnpm run assistant queue --limit 5
+pnpm run assistant results --purpose diagnostic --limit 3
+
+# 从任意工作目录执行已安装技能
+& 'C:/Users/14629/.codex/skills/tender-assistant/scripts/tender.ps1' results --limit 5
+
+# 更新技能（拒绝覆盖手工修改），卸载时添加 -Uninstall
+& ./integrations/codex/install-skill.ps1
+```
+
+`results/queue/packet` 读取已有分析，默认正式用途，不联网或调用模型；技能包装脚本先编译源码。`collect/archive/analyze` 原样转交对应阶段。新采集仍需显式 `collect`，模型分析仍由当前会话读取证据完成；不保证一次指令自动分析全部候选。
