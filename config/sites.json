@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "site-capability-register-not-executable",
+  "sources": [
+    {
+      "id": "guangdong-public-resources",
+      "name": "广东省公共资源交易平台",
+      "entryUrl": "https://ygp.gdzwfw.gov.cn/",
+      "regionPlan": "广东省；首轮不额外限制城市",
+      "queryPlan": "网站开发；最近 7 个自然日；保留公告类型用于分类",
+      "historicalObservationDate": "2026-09-23",
+      "historicalObservation": "前期在 Codex 浏览器内未执行登录即可搜索软件及打开样本详情；不等于独立 Playwright 已验证",
+      "capabilities": {
+        "publicSearch": "observed-in-prior-browser-session",
+        "scriptedPagination": "not-tested",
+        "completeBodyExtraction": "not-tested-prior-snapshot-gap",
+        "attachmentDownload": "not-tested",
+        "authenticatedSessionReuse": "not-tested",
+        "headlessMode": "not-tested"
+      },
+      "p1Priority": "定位正文在屏幕可见但当前文本快照不完整的问题"
+    },
+    {
+      "id": "ccgp",
+      "name": "中国政府采购网",
+      "entryUrl": "https://www.ccgp.gov.cn/",
+      "searchEntryUrl": "https://search.ccgp.gov.cn/",
+      "regionPlan": "显式选择广东；不得只因域名为全国站就采集全国结果",
+      "queryPlan": "网站开发；最近 7 个自然日；分别核验标题与全文搜索的支持情况",
+      "historicalObservationDate": "2026-09-23",
+      "historicalObservation": "前期在 Codex 浏览器内未执行登录即可搜索软件并读取样本正文；样本附件指向地方系统",
+      "capabilities": {
+        "publicSearch": "observed-in-prior-browser-session",
+        "scriptedPagination": "not-tested",
+        "completeBodyExtraction": "sample-body-observed-script-not-tested",
+        "attachmentDownload": "not-tested",
+        "authenticatedSessionReuse": "not-tested",
+        "headlessMode": "not-tested"
+      },
+      "p1Priority": "验证广东地区过滤、日期边界与分页"
+    }
+  ],
+  "newOriginPolicy": "从真实公告确认附件或交易系统的来源后再登记；不自动扩展为全省所有交易系统"
+}

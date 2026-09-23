@@ -1,0 +1,74 @@
+{
+  "checkedAt": "2026-09-23T08:45:41.065Z",
+  "projectRoot": "D:\\creator\\coding_project\\tender-assistant",
+  "platform": "win32",
+  "architecture": "x64",
+  "osRelease": "10.0.26200",
+  "node": {
+    "version": "v24.13.0",
+    "executable": "C:\\Program Files\\nodejs\\node.exe",
+    "codeExecution": "passed"
+  },
+  "pnpm": {
+    "version": "10.28.1",
+    "verification": "pnpm --version and install output"
+  },
+  "npm": {
+    "version": "11.6.2",
+    "verification": "npm --version"
+  },
+  "git": {
+    "version": "2.52.0.windows.1",
+    "branch": "codex/p0",
+    "verification": "git --version and git init output"
+  },
+  "codexCli": {
+    "version": "0.155.0-alpha.16",
+    "verification": "codex --version"
+  },
+  "workbuddy": {
+    "version": "5.5.6.0",
+    "verification": "local executable ProductVersion"
+  },
+  "playwright": {
+    "version": "1.63.0",
+    "nodeEngine": ">=20",
+    "install": "pnpm install --frozen-lockfile --ignore-scripts passed",
+    "moduleImport": "passed",
+    "chromiumExecutable": "C:\\Users\\14629\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe",
+    "chromiumExecutableExists": true,
+    "bundledChromiumMetadata": [
+      {
+        "name": "chromium",
+        "revision": "1243",
+        "browserVersion": "153.0.8010.12"
+      },
+      {
+        "name": "chromium-headless-shell",
+        "revision": "1243",
+        "browserVersion": "153.0.8010.12"
+      }
+    ],
+    "browserLaunch": "not-tested-in-P0",
+    "governmentWebsiteAutomation": "not-tested-in-P0"
+  },
+  "systemBrowsers": [
+    {
+      "name": "Chrome",
+      "version": "153.0.8010.53",
+      "path": "C:/Program Files/Google/Chrome/Application/chrome.exe"
+    },
+    {
+      "name": "Edge",
+      "version": "153.0.4234.48",
+      "path": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+    }
+  ],
+  "runtimeRoot": {
+    "path": "C:/Users/14629/AppData/Local/TenderAssistant",
+    "exists": false,
+    "createdByP0": false
+  },
+  "standAloneAgentBrowserCli": "not-found-on-current-PATH; not-required-for-P1",
+  "standAlonePlaywrightCli": "not-found-on-current-PATH; project-playwright-CLI-available"
+}

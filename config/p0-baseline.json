@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "phase": "P0",
+  "kind": "planning-baseline-not-executable",
+  "recordedOn": "2026-09-23",
+  "business": {
+    "focus": "网站开发",
+    "keywords": ["网站开发"],
+    "keywordStatus": "user-confirmed-initial-query",
+    "expansionCandidatesNotEnabled": ["网站建设", "网站改版", "门户网站"],
+    "excludeKeywords": [],
+    "excludeKeywordsStatus": "not-provided-do-not-infer"
+  },
+  "region": {
+    "province": "广东省",
+    "interpretation": "site-procurement-region-filter",
+    "executionLocationPolicy": "review-when-different-from-buyer-region"
+  },
+  "sources": ["guangdong-public-resources", "ccgp"],
+  "dateRange": {
+    "days": 7,
+    "mode": "calendar-days-including-today",
+    "timezone": "Asia/Shanghai",
+    "endAt": "run-start-time",
+    "exampleRunDate": "2026-09-23",
+    "exampleStartDate": "2026-09-17"
+  },
+  "operation": {
+    "host": "Codex",
+    "trigger": "manual",
+    "browserMode": "headed-first",
+    "humanAuthenticationHandoff": true,
+    "recurringScheduleEnabled": false,
+    "notificationMode": "preview-only",
+    "externalSendingEnabled": false
+  },
+  "filterPolicy": {
+    "budgetRange": null,
+    "budgetStatus": "not-set-do-not-filter-by-budget",
+    "missingFieldPolicy": "retain-for-review",
+    "noticeStages": "collect-and-classify-all-returned-stages-within-query",
+    "tenderEligibilityAssessmentEnabled": false
+  },
+  "paths": {
+    "projectRoot": "D:\\creator\\coding_project\\tender-assistant",
+    "runtimeRoot": "C:\\Users\\14629\\AppData\\Local\\TenderAssistant",
+    "runtimeRootDecision": "local-default-from-plan-changeable-before-first-write",
+    "runtimeRootCreatedInP0": false
+  },
+  "dataBoundary": {
+    "companyMaterialProvided": false,
+    "companyMaterialCloudUploadAuthorized": false,
+    "modelApiSelected": false,
+    "credentialValuesStoredHere": false
+  }
+}

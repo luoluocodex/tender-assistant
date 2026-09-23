@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+output/
+.playwright-cli/
+.env
+.env.*
+!.env.example
+*.log
+config/*.local.json
+runtime/
+private/
+playwright/.auth/
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
