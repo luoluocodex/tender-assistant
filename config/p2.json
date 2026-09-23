@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "runtimeRoot": "C:/Users/14629/AppData/Local/TenderAssistant",
+  "minIntervalMs": 6000,
+  "maxFiles": 10,
+  "maxFileBytes": 52428800,
+  "timeoutMs": 60000,
+  "parseTimeoutMs": 60000,
+  "maxRunMinutes": 15,
+  "maxZipEntries": 200,
+  "maxExpandedBytes": 104857600,
+  "maxArchiveDepth": 2,
+  "retention": "keep-until-manual-review-no-automatic-deletion",
+  "backup": "local-consistent-snapshot-excluding-sessions",
+  "sources": [
+    { "id": "ccgp-download", "origin": "http://download.ccgp.gov.cn", "pathPrefix": "/oss/download", "evidence": "P1 公告 27391875 的附件链接" },
+    { "id": "gdgpo", "origin": "https://gdgpo.czt.gd.gov.cn", "pathPrefix": "/gpx-bid-file/", "evidence": "P1 公告 27390396、27390249 的附件链接" }
+  ]
+}

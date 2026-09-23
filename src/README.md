@@ -1,5 +1,7 @@
 # P1 采集代码
 
+P2 新增模块：`archive/` 负责显式选附件、下载、隔离解析与手动 CLI；`auth/` 管理来源和账号隔离的有头会话；`store/` 负责 SQLite、内容寻址文件、进度与备份恢复。详见各目录 README。P1 核心采集行为保持独立。
+
 关键词：Playwright、有头浏览器、站点适配、公告正文、Shadow DOM、固定查询窗口。
 
 `cli.ts` 校验参数，`run/config.ts` 校验已确认配置；`run/collect.ts` 装配浏览器、查询、抽样详情和报告。公共数据类型集中在 `model.ts`。

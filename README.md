@@ -6,20 +6,26 @@
 
 当前已实现 P1 两站公开采集原型，并完成首轮真实网站验证，**尚未全部通过 P1 验收**。正式查询在全国站返回零结果；广东站读取 49 页、去重后 488 条候选，第 50 页遇到 HTTP 429，20 份详情中 14 份正文完整。P1 的诊断验证、证据和剩余缺口见执行记录；程序退出成功与 P1 全部验收通过是两个独立结论。
 
+按用户后续指令继续实现了 **P2 登录会话、附件解析和本地归档**。5 份真实公开附件已下载解析并归档，重跑复用与备份恢复已验证。真实账号登录、跨日复用、CA/证书仍未验证；本轮样本无需登录，不把受控会话测试当作真实认证成功。
+
 ## 文档与配置
 
 - [P0 执行记录](D:/creator/coding_project/tender-assistant/docs/P0-范围与环境确认.md)：已确认事项、环境结果、站点能力和 P1 准入条件。
 - [P1 执行记录](D:/creator/coding_project/tender-assistant/docs/P1-两站公开采集验证.md)：查询结果、关键发现、验证证据与未覆盖项。
+- [P2 执行记录](D:/creator/coding_project/tender-assistant/docs/P2-登录附件与归档.md)：真实附件、会话边界、归档结构、恢复操作与验收记录。
 - [执行方案](D:/creator/coding_project/tender-assistant/docs/招投标信息助手执行方案.md)：P0—P6 的总体实施计划。
 - [首轮配置基线](D:/creator/coding_project/tender-assistant/config/p0-baseline.json)：网站开发、广东、最近 7 天、手动、通知预览。
 - [站点能力登记](D:/creator/coding_project/tender-assistant/config/sites.json)：区分前期浏览观察、P1 独立脚本实测和仍未验证的能力。
 - [P1 运行配置](D:/creator/coding_project/tender-assistant/config/p1.json)：访问间隔、页数上限、详情抽样数量与证据位置。
+- [P2 运行配置](D:/creator/coding_project/tender-assistant/config/p2.json)：已确认数据目录、附件来源、体积/解析限制和保存策略。
 
 `p0-baseline.json` 保留 P0 的历史标识，P1 读取其中已确认的关键词、地区和运行边界。后续阶段未启用的字段不代表已经实现。`sites.json` 是站点能力记录，P1 适配器只支持已实现的两个来源。
 
 ## 环境准备
 
 本机基线为 Node.js 24.13.0、pnpm 10.28.1。Playwright 固定为 1.63.0；依赖由 `pnpm-lock.yaml` 锁定。
+
+P2 使用 Node 内置 SQLite，运行要求提高为 **Node.js >=24.13.0**。本机该模块仍会显示 ExperimentalWarning，已通过实际归档、备份恢复和测试验证；未更换系统 Node。解析依赖为 PDF.js、yauzl、fast-xml-parser、word-extractor，均固定版本，不调用 Office 或执行宏。
 
 重建项目依赖：
 
@@ -72,12 +78,27 @@ pnpm run collect:p1 --diagnostic --keyword 软件 --site ccgp --max-pages 2 --ma
 
 ## 数据位置
 
-源码、未来分析提示词和配置保存在项目目录；正式运行数据默认使用 `C:\Users\14629\AppData\Local\TenderAssistant`，P1 尚未建立该归档。当前公开页面验证材料保存在已忽略的 `output/playwright/`，保留到人工验收，不自动删除。它们可能包含公告公开的联系方式及文件链接，不作为测试 fixture 提交 Git。
+源码、未来分析提示词和配置保存在项目目录。P2 已在 `C:\Users\14629\AppData\Local\TenderAssistant` 创建数据库、原始公告、附件、解析结果与任务记录，权限限制为当前 Windows 用户和 SYSTEM。会话位于 `private/sessions/`，不进入备份。所有材料保留到人工验收，不自动删除；备份为本地同盘副本，不代表异地备份。
+
+P1 浏览器验证材料仍位于已忽略的 `output/playwright/`。真实材料可能包含公开联系方式及带访问参数的附件链接，不作为测试 fixture 提交 Git。普通日志去掉 URL 查询参数，完整来源只保存在受限归档中。
 
 实际账号、Cookie、令牌、公司资料及通知凭据不得放入仓库。首轮不接入公司资质资料，不选择付费模型 API，不创建定时任务，不实际发送通知。
 
+## P2 使用入口
+
+从 P1 报告中显式选择附件，序号从 0 开始；不会自动下载全部候选。以下是本次已验证的诊断任务，重跑默认先校验并复用已有内容：
+
+```powershell
+pnpm run archive:p2 --resume p2-73e744bf-0d47-4b5b-9336-e1644a201643
+pnpm run archive:p2 --verify
+pnpm run archive:p2 --backup
+pnpm run archive:p2 --help
+```
+
+首次运行、`--refresh`、来源登记、人工登录/导入以及恢复到新目录的命令见 P2 执行记录。关闭重开或取消后使用同一任务 ID 继续；完成文件通过哈希验证后复用。重新下载以检查原链接内容变化时显式使用 `--refresh`，保留旧版本。不会自动刷新过期签名链接。
+
 ## 限制与下一阶段
 
-P1 不执行登录、附件下载、SQLite 归档、业务相关性过滤、AI 摘要、公司资质匹配或外部通知。未知详情模板、正文缺失、查询不完整均保留明确状态；有头运行通过不代表无头已验证。
+P1 命令仍只采集公开列表和正文；P2 命令负责附件与归档，两者分开运行。未知详情模板、正文缺失、查询不完整均保留明确状态。P2 尚未验证真实认证、跨日会话、CA/UKey 和无头模式；扫描件、加密、RAR/其他不支持格式返回明确状态，不自动 OCR 或破解密码。
 
-后续先处理 [P1 执行记录](D:/creator/coding_project/tender-assistant/docs/P1-两站公开采集验证.md) 的验收缺口，再按授权进入 P2。重新执行当前命令会新建运行记录，不覆盖已有结果。
+P1 的限流与模板缺口仍需补齐。业务相关性、AI 摘要、公司资质匹配和外部通知尚未实现，本轮未进入 P3。附件能解析不等于内容完整、业务相关或满足投标资格。

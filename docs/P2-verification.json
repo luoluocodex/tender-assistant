@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "phase": "P2",
+  "recordedOn": "2026-09-23",
+  "purpose": "diagnostic",
+  "status": "public-attachments-and-archive-verified-live-auth-not-tested",
+  "jobId": "p2-73e744bf-0d47-4b5b-9336-e1644a201643",
+  "originalDownloadStartedAt": "2026-09-23T13:35:03.540Z",
+  "originalDownloadCompletedAt": "2026-09-23T13:35:27.991Z",
+  "runtimeRoot": "C:/Users/14629/AppData/Local/TenderAssistant",
+  "report": "C:\\Users\\14629\\AppData\\Local\\TenderAssistant\\runs\\p2-73e744bf-0d47-4b5b-9336-e1644a201643\\report.json",
+  "realAccountLoginPerformed": false,
+  "liveSessionReuseVerified": false,
+  "controlledSessionTestsPassed": true,
+  "files": [
+    {
+      "noticeId": "27391875",
+      "name": "附件3：比价采购登记表.doc",
+      "sourceOrigin": "http://download.ccgp.gov.cn",
+      "kind": "doc",
+      "bytes": 384000,
+      "sha256": "8a3093acaf43e7f28993f3a746e8548971628a13d76dde9af16892b3c6f4247e",
+      "parseStatus": "parsed",
+      "units": 22,
+      "characters": 352,
+      "members": [],
+      "reusedOnResume": true
+    },
+    {
+      "noticeId": "27391875",
+      "name": "附件2：报价清单.xlsx",
+      "sourceOrigin": "http://download.ccgp.gov.cn",
+      "kind": "xlsx",
+      "bytes": 31013,
+      "sha256": "766283d9456faaa4348e120cb2bbb490b8996e78e301fe0514c15f3bde6ab023",
+      "parseStatus": "parsed",
+      "units": 556,
+      "characters": 9351,
+      "members": [],
+      "reusedOnResume": true
+    },
+    {
+      "noticeId": "27390396",
+      "name": "合同包1：报价明细附件（广东智搜网络科技有限公司）.pdf",
+      "sourceOrigin": "https://gdgpo.czt.gd.gov.cn",
+      "kind": "pdf",
+      "bytes": 665557,
+      "sha256": "22cedf5ed27d55083d8ca827e6c6ea93c55e0b3b749804e944d6829de84c5b55",
+      "parseStatus": "parsed",
+      "units": 10,
+      "characters": 8074,
+      "members": [],
+      "reusedOnResume": true
+    },
+    {
+      "noticeId": "27390396",
+      "name": "中山市现代职业技术学校“AI+短视频内容电商产教融合开放型实践中心”项目招标文件（2026090201）.zip",
+      "sourceOrigin": "https://gdgpo.czt.gd.gov.cn",
+      "kind": "zip",
+      "bytes": 532241,
+      "sha256": "61e4c388011004f12a3278b70b735241059561d4e017a32d272ae4df29995f1a",
+      "parseStatus": "parsed",
+      "units": 1757,
+      "characters": 133095,
+      "members": [
+        {
+          "name": "中山市现代职业技术学校“AI+短视频内容电商产教融合开放型实践中心”项目招标文件（2026090201）.pdf",
+          "kind": "pdf",
+          "status": "parsed"
+        },
+        {
+          "name": "中山市现代职业技术学校“AI+短视频内容电商产教融合开放型实践中心”项目招标文件（2026090201）.docx",
+          "kind": "docx",
+          "status": "parsed"
+        }
+      ],
+      "reusedOnResume": true
+    },
+    {
+      "noticeId": "27390249",
+      "name": "资格条件承诺函.docx",
+      "sourceOrigin": "https://gdgpo.czt.gd.gov.cn",
+      "kind": "docx",
+      "bytes": 11328,
+      "sha256": "339d30a49064cf7cbc1bf916e6e80e5b7465bdc883d6bfd41f806ee833d30fc7",
+      "parseStatus": "parsed",
+      "units": 11,
+      "characters": 298,
+      "members": [],
+      "reusedOnResume": true
+    }
+  ],
+  "consistency": {
+    "ok": true,
+    "objects": 5,
+    "noticeVersions": 3
+  },
+  "backup": {
+    "path": "C:/Users/14629/AppData/Local/TenderAssistant/backups/2026-09-23T13-41-04-274Z-690248db",
+    "files": 16,
+    "sessionsIncluded": false
+  },
+  "restoreCheck": {
+    "path": "C:/Users/14629/AppData/Local/TenderAssistant/restore-checks/check-1790170949223",
+    "ok": true,
+    "objects": 5,
+    "noticeVersions": 3
+  },
+  "validation": {
+    "testsPassed": 26,
+    "typeCheck": true,
+    "build": true
+  },
+  "limitations": [
+    "P1诊断样本，不计入正式商机",
+    "真实账号、跨日复用、CA/UKey、无头尚未验证",
+    "扫描件仅标需OCR，加密文件不解密，RAR不解析",
+    "备份为同盘副本，无异地容灾",
+    "P1限流和未知详情模板未修复"
+  ]
+}

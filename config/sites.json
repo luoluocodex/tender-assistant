@@ -52,7 +52,7 @@
         "publicSearch": "verified-headed-formal-title-and-fulltext-zero-results",
         "scriptedPagination": "verified-diagnostic-terminal-pages-guangdong-7-shenzhen-8",
         "completeBodyExtraction": "verified-20-diagnostic-details-formal-no-samples",
-        "attachmentDownload": "not-tested",
+        "attachmentDownload": "verified-2-native-and-3-linked-public-diagnostic-files",
         "authenticatedSessionReuse": "not-tested",
         "headlessMode": "not-tested"
       },
@@ -65,8 +65,14 @@
         "formalCandidates": 0,
         "formalReport": "output/playwright/2026-09-23T11-05-57-738Z-formal/report.json",
         "diagnosticKeyword": "软件",
-        "diagnosticPages": { "guangdong": 7, "shenzhen": 8 },
-        "diagnosticCandidates": { "guangdong": 136, "shenzhen": 158 },
+        "diagnosticPages": {
+          "guangdong": 7,
+          "shenzhen": 8
+        },
+        "diagnosticCandidates": {
+          "guangdong": 136,
+          "shenzhen": 158
+        },
         "diagnosticDetailsComplete": 20,
         "diagnosticDetailsReport": "output/playwright/2026-09-23T11-19-09-863Z-diagnostic/report.json",
         "diagnosticPaginationReport": "output/playwright/2026-09-23T11-22-07-553Z-diagnostic/report.json",
@@ -77,8 +83,47 @@
           "20 份详情和末页验证来自独立诊断运行，诊断不计入正式业务成果"
         ]
       },
-      "p1Priority": "保持正式零结果记录；待正式业务有样本后验证搜索到详情链路"
+      "p1Priority": "保持正式零结果记录；待正式业务有样本后验证搜索到详情链路",
+      "p2Verification": {
+        "observedDate": "2026-09-23",
+        "status": "public-attachment-paths-verified-live-auth-not-tested",
+        "diagnosticNoticeIds": [
+          "27391875",
+          "27390396",
+          "27390249"
+        ],
+        "verifiedFiles": 5,
+        "nativeDownloadFiles": 2,
+        "linkedGdgpoFiles": 3,
+        "evidence": "docs/P2-verification.json",
+        "liveLoginPerformed": false
+      }
     }
   ],
-  "newOriginPolicy": "从真实公告确认附件或交易系统的来源后再登记；不自动扩展为全省所有交易系统"
+  "newOriginPolicy": "从真实公告确认附件或交易系统的来源后再登记；不自动扩展为全省所有交易系统",
+  "attachmentSources": [
+    {
+      "id": "ccgp-download",
+      "origin": "http://download.ccgp.gov.cn",
+      "discoveredFrom": "ccgp 公告 27391875",
+      "publicFilesVerified": 2,
+      "formats": [
+        "doc",
+        "xlsx"
+      ],
+      "authenticatedSessionReuse": "not-required-by-samples-not-tested-live"
+    },
+    {
+      "id": "gdgpo",
+      "origin": "https://gdgpo.czt.gd.gov.cn",
+      "discoveredFrom": "ccgp 公告 27390396、27390249",
+      "publicFilesVerified": 3,
+      "formats": [
+        "pdf",
+        "zip",
+        "docx"
+      ],
+      "authenticatedSessionReuse": "not-required-by-samples-not-tested-live"
+    }
+  ]
 }

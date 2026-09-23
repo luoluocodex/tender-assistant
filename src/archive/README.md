@@ -1,0 +1,13 @@
+# P2 附件采集与解析
+
+入口：项目根目录 `pnpm run archive:p2 --help`。输入为 P1 报告和明确的 `公告ID:附件序号`，或已有 P2 任务 ID；正式/诊断用途随输入保存，不修改 P1 的查询边界。
+
+- `cli.ts`：参数、人工接管、信号与命令装配。
+- `config.ts` / `model.ts`：运行配置校验、状态与输入输出类型。
+- `source.ts`：来源范围、签名脱敏、公告版本和附件选择。
+- `download.ts`：限额流式下载，逐跳校验来源；必要时仅为目标 URL 读取专用会话 Cookie。
+- `run.ts`：串行队列、已完成内容校验复用、失败/取消恢复与人工文件导入。
+- `parse.ts` / `parse-worker.ts`：可超时或取消的解析线程；不将解析器错误和正文打印到日志。
+- `parse-file.ts` / `zip.ts` / `office.ts`：内容识别、PDF/DOC/DOCX/XLSX 与 ZIP 解析，页码/段落/单元格定位，CRC/路径/膨胀限制。
+
+解析成功仅表示文字提取通过检查；不执行宏、公式、程序或 PDF 动作，不做 OCR、业务判断或法律结论。附件 URL 仅从真实公告登记的来源读取；新来源需核实并更新 `config/p2.json`。验证用 `pnpm test`、`pnpm run check`；真实材料不写入测试夹具。

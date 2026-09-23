@@ -2,21 +2,29 @@
   "name": "tender-assistant",
   "version": "0.0.0",
   "private": true,
-  "description": "政府招投标信息助手；P1 两站公开采集验证",
+  "description": "政府招投标信息助手；公开采集、附件解析与本地归档",
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "pnpm run build && node --test dist/test/unit/*.test.js",
-    "collect:p1": "pnpm run build && node dist/src/cli.js"
+    "collect:p1": "pnpm run build && node dist/src/cli.js",
+    "archive:p2": "pnpm run build && node dist/src/archive/cli.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24.13.0"
   },
   "packageManager": "pnpm@10.28.1",
   "devDependencies": {
     "@types/node": "24.13.6",
+    "@types/yauzl": "3.4.0",
     "playwright": "1.63.0",
     "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "fast-xml-parser": "5.11.1",
+    "pdfjs-dist": "6.3.289",
+    "word-extractor": "1.0.4",
+    "yauzl": "3.4.0"
   }
 }
