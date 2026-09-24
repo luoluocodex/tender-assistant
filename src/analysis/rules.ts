@@ -1,6 +1,7 @@
 import { checkPublication } from '../run/window.js';
 import type { Notice, RuleConfig, RuleDecision, ProjectGroup } from './model.js';
 import { sha256 } from '../store/files.js';
+import { materialRevision, compareRevision } from './revision.js';
 
 /** 分类只针对公告标题/类型，避免正文引用历史结果造成阶段误判。 */
 export function stage(title: string, type: string | null): string {
@@ -56,8 +57,8 @@ export function associate(notices: Notice[]): ProjectGroup[] {
     const lots = new Map<string, string[]>();
     for (const n of values) { const scope = lot(n); lots.set(scope, [...(lots.get(scope) ?? []), n.version]); }
     const current = values.filter(n => !values.some(other => other.key === n.key && other.version !== n.version
-      && other.fetchedAt && n.fetchedAt && Date.parse(other.fetchedAt) > Date.parse(n.fetchedAt)));
-    // 同一公告先按抓取时间选现有版本；不同公告按发布时间排序，缺失/同刻冲突不猜先后。
+      && compareRevision(materialRevision(n), materialRevision(other)) === 1));
+    // 同一公告按正文时间和附件观察选现有版本；不同公告按发布时间排序，无法排序时不猜先后。
     const time = (n: Notice) => {
       const raw = n.listing.publishedAt?.replace(' ', 'T');
       return raw && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(raw) ? Date.parse(`${raw}+08:00`) : NaN;

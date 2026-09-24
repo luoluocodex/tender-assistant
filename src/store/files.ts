@@ -36,21 +36,37 @@ export async function atomicFile(path: string, contents: string | Uint8Array): P
 export async function acquireLock(root: string, name = 'archive'): Promise<() => Promise<void>> {
   if (!/^[a-zA-Z0-9_-]+$/.test(name)) throw new Error('锁名无效');
   const path = inside(root, `${name}.lock`); const token = randomUUID();
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const file = await open(path, 'wx');
-      await file.writeFile(JSON.stringify({ pid: process.pid, token })); await file.close();
-      return async () => { const current: unknown = JSON.parse(await readFile(path, 'utf8')); if (current && typeof current === 'object' && 'token' in current && current.token === token) await unlink(path); };
-    } catch (error) {
-      if (!(error && typeof error === 'object' && 'code' in error && error.code === 'EEXIST')) throw error;
-      const state: unknown = JSON.parse(await readFile(path, 'utf8'));
-      if (!state || typeof state !== 'object' || !('pid' in state) || !Number.isInteger(state.pid) || Number(state.pid) <= 0) throw new Error('锁文件异常，需人工检查');
-      try { process.kill(Number(state.pid), 0); throw new Error('另一个归档或会话进程仍在运行'); }
-      catch (probe) {
-        if (!probe || typeof probe !== 'object' || !('code' in probe) || probe.code !== 'ESRCH') throw probe;
-        await unlink(path);
+  // SQLite 的文件锁由操作系统释放；持有期间串行化旧 PID 标记的回收，不能删除此文件。
+  const { DatabaseSync } = await import('node:sqlite');
+  const guard = new DatabaseSync(inside(root, `${name}.lock.sqlite`), { timeout: 0, defensive: true });
+  try { guard.exec('BEGIN EXCLUSIVE'); }
+  catch (error) {
+    guard.close();
+    if (error && typeof error === 'object' && 'errcode' in error && error.errcode === 5) throw new Error('另一个归档或会话进程仍在运行');
+    throw error;
+  }
+  try {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const file = await open(path, 'wx');
+        try { await file.writeFile(JSON.stringify({ pid: process.pid, token })); } finally { await file.close(); }
+        let released = false;
+        return async () => {
+          if (released) return; released = true;
+          try { const current: unknown = JSON.parse(await readFile(path, 'utf8')); if (current && typeof current === 'object' && 'token' in current && current.token === token) await unlink(path); }
+          finally { guard.close(); }
+        };
+      } catch (error) {
+        if (!(error && typeof error === 'object' && 'code' in error && error.code === 'EEXIST')) throw error;
+        const state: unknown = JSON.parse(await readFile(path, 'utf8'));
+        if (!state || typeof state !== 'object' || !('pid' in state) || !Number.isInteger(state.pid) || Number(state.pid) <= 0) throw new Error('锁文件异常，需人工检查');
+        try { process.kill(Number(state.pid), 0); throw new Error('另一个归档或会话进程仍在运行'); }
+        catch (probe) {
+          if (!probe || typeof probe !== 'object' || !('code' in probe) || probe.code !== 'ESRCH') throw probe;
+          await unlink(path);
+        }
       }
     }
-  }
-  throw new Error('无法取得运行锁');
+    throw new Error('无法取得运行锁');
+  } catch (error) { guard.close(); throw error; }
 }

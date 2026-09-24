@@ -17,7 +17,7 @@ export async function readRules(project: string): Promise<RuleConfig> {
   if (!Array.isArray(business.keywords) || business.keywords.length !== 1 || !Array.isArray(business.excludeKeywords)) throw new Error('P3_REQUIRES_SINGLE_CONFIRMED_KEYWORD');
   const data = { keyword: string(business.keywords[0]), region: string(region.province), excludeKeywords: business.excludeKeywords.map(string) };
   if (data.region !== '广东省') throw new Error('UNSUPPORTED_REGION_RULE');
-  const implementation = await Promise.all(['rules', 'source', 'fields', 'packets', 'validation', 'contract'].map(name => readFile(new URL(`./${name}.js`, import.meta.url), 'utf8')));
+  const implementation = await Promise.all(['rules', 'source', 'fields', 'packets', 'validation', 'contract', 'revision', '../sites/fields', '../sites/dates'].map(name => readFile(new URL(`./${name}.js`, import.meta.url), 'utf8')));
   return { version: `p3-v1-${sha256(JSON.stringify({ data, implementation })).slice(0, 12)}`, ...data };
 }
 export async function readPrompts(project: string): Promise<Record<string, string>> {

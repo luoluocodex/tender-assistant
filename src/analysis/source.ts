@@ -62,8 +62,8 @@ async function attachments(root: string, jobId: string | undefined, textByKey: M
       if (sha256(bytes) !== item.sha256 || !expected || !parseSha.startsWith(expected)) throw new Error('ARCHIVE_INTEGRITY_FAILURE');
       const parsed = object(JSON.parse(parsedBytes.toString('utf8')));
       const units = list(parsed.units).map(raw => { const v = object(raw); return { locator: string(v.locator), text: safeText(string(v.text)) }; });
-      const status = item.status === 'complete' ? string(parsed.status) : `archive-${item.status}:${string(parsed.status)}`;
-      const file = { name: safeText(item.candidate.name), sha256: item.sha256, parseSha, status, units };
+      const status = item.sourceReviewRequired ? 'source-review-required' : item.status === 'complete' ? string(parsed.status) : `archive-${item.status}:${string(parsed.status)}`;
+      const file = { name: safeText(item.candidate.name), sha256: item.sha256, parseSha, status, units, ...(item.observation ? { observation: item.observation } : {}) };
       const existing = result.get(key) ?? [];
       if (!existing.some(x => x.sha256 === file.sha256 && x.parseSha === file.parseSha)) existing.push(file);
       result.set(key, existing);

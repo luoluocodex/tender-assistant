@@ -7,7 +7,7 @@ export interface ArchiveConfig {
 }
 export type ParseStatus = 'parsed' | 'partial' | 'needs-ocr' | 'encrypted' | 'unsupported' | 'invalid' | 'timeout';
 export interface ParsedFile {
-  parserVersion: 'p2-v1'; kind: string; status: ParseStatus; reason: string;
+  parserVersion: 'p2-v1' | 'p2-v2'; kind: string; status: ParseStatus; reason: string;
   units: Array<{ locator: string; text: string }>;
   members: Array<{ name: string; sha256: string; size: number; kind: string; status: ParseStatus; reason: string }>;
 }
@@ -20,7 +20,11 @@ export interface ArchiveItem {
   sha256: string | null; objectPath: string | null; parsePath: string | null; parseStatus: string | null;
   parseSha?: string | null;
   reused: boolean;
+  sourceReviewRequired?: boolean;
+  observation?: ArchiveObservation;
 }
+/** 同一归档的单调观察序号；复用文件不产生新观察，备份恢复保持归档标识。 */
+export interface ArchiveObservation { archiveId: string; attachmentId: string; revision: number }
 /** 固定错误码避免第三方错误或带签名的 URL 进入普通日志。 */
 export class ArchiveError extends Error {
   constructor(readonly code: string, readonly action: 'failed' | 'needs-human' | 'limited' = 'failed') { super(code); }

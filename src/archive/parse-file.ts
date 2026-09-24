@@ -14,7 +14,7 @@ export function fileKind(bytes: Buffer): string {
 
 /** 只解析内容；返回页、段落或 ZIP 条目定位，扫描件、加密和损坏各自保留状态。 */
 export async function parseFile(bytes: Buffer, config: ArchiveConfig, depth = 0, budget: ZipBudget = { expanded: 0, entries: 0 }): Promise<ParsedFile> {
-  const result: ParsedFile = { parserVersion: 'p2-v1', kind: fileKind(bytes), status: 'parsed', reason: '', units: [], members: [] };
+  const result: ParsedFile = { parserVersion: 'p2-v2', kind: fileKind(bytes), status: 'parsed', reason: '', units: [], members: [] };
   try {
     if (bytes.length === 0) throw new ArchiveError('EMPTY_FILE');
     if (result.kind === 'pdf') {

@@ -4,6 +4,8 @@ import type { AnalysisSnapshot, Packet } from '../analysis/model.js';
 import { json, readResults } from '../analysis/persistence.js';
 import { effectiveDecision } from '../analysis/report.js';
 import { safeText } from '../analysis/source.js';
+import { compareRevision, materialRevision } from '../analysis/revision.js';
+import { analysisFields } from '../analysis/fields.js';
 import { sha256 } from '../store/files.js';
 import { deadlineBucket, deadlineInstant } from './deadline.js';
 import type { NotifyConfig, NotifyEvent, Observation } from './model.js';
@@ -43,12 +45,18 @@ export async function planEvents(root: string, snapshot: AnalysisSnapshot, confi
   for (const p of current) {
     const prior = previous.find(o => o.purpose === snapshot.purpose && o.subject === p.notice.key);
     const contentHash = sha256(json({ notice: p.notice.version, attachments: p.notice.attachments.map(a => [a.sha256, a.parseSha]) }));
-    if (prior?.fetchedAt && p.notice.fetchedAt && Date.parse(p.notice.fetchedAt) < Date.parse(prior.fetchedAt)) { stale++; continue; }
-    if (prior && prior.contentHash !== contentHash && (!p.notice.fetchedAt || !prior.fetchedAt || Date.parse(p.notice.fetchedAt) <= Date.parse(prior.fetchedAt))) { stale++; continue; }
+    const material = materialRevision(p.notice);
+    if (prior?.material) {
+      const order = compareRevision(prior.material, material);
+      if (order === -1 || order === null) { stale++; continue; }
+    } else {
+      if (prior?.fetchedAt && p.notice.fetchedAt && Date.parse(p.notice.fetchedAt) < Date.parse(prior.fetchedAt)) { stale++; continue; }
+      if (prior && prior.contentHash !== contentHash && (!p.notice.fetchedAt || !prior.fetchedAt || Date.parse(p.notice.fetchedAt) <= Date.parse(prior.fetchedAt))) { stale++; continue; }
+    }
     const result = results.get(p.packetId), decision = effectiveDecision(p, result);
     const relevant = decision === 'related' || p.decision.tracked || prior?.relevant === 'yes';
     observations.push({ purpose: snapshot.purpose, subject: p.notice.key, version: p.notice.version, contentHash,
-      fetchedAt: p.notice.fetchedAt, relevant: relevant ? 'yes' : 'no' });
+      fetchedAt: p.notice.fetchedAt, relevant: relevant ? 'yes' : 'no', material });
     // 通知内容版本排除抓取时刻、时间窗、packetId 和模型运行标识，避免同一业务内容每日重复。
     const version = sha256(json({ contentHash, rule: p.rules.version, prompt: p.promptVersion, company: p.companyVersion,
       relevance: result?.effective.relevance ?? null, summary: result?.effective.summary ?? null, requirements: result?.effective.requirements ?? null }));
@@ -62,7 +70,8 @@ export async function planEvents(root: string, snapshot: AnalysisSnapshot, confi
       evidence: [{ locator: `${locator}:title-1`, quote: p.notice.listing.title.slice(0, 2000) }] }));
     if (!relevant || decision === 'irrelevant' || p.decision.stage !== 'procurement') continue;
     const group = snapshot.projects.find(g => g.currentNoticeVersions.includes(p.notice.version));
-    const dates = p.notice.fields.dates.filter(d => d.kind === 'response-deadline');
+    // 历史快照保持原字段；本次提醒必须使用修复后的日期边界，不能重用旧误提取值。
+    const dates = analysisFields(p.notice.text).dates.filter(d => d.kind === 'response-deadline');
     const unique = [...new Set(dates.map(d => d.raw))];
     const deadline = unique.length === 1 ? deadlineInstant(unique[0]!) : null;
     const conditional = dates.some(d => /如|若|自动|顺延|可能|原定|原为|变更前|延期/.test(d.evidence));

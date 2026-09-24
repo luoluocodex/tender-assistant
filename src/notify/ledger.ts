@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { object, string } from '../archive/config.js';
-import { json } from '../analysis/persistence.js';
+import { json, loadSnapshot } from '../analysis/persistence.js';
+import { materialRevision } from '../analysis/revision.js';
 import { atomicFile, inside, sha256 } from '../store/files.js';
 import { eventId } from './events.js';
 import { ledgerContract, type Ledger, type NotifyEvent, type Delivery, type NotifyRun } from './model.js';
@@ -36,10 +37,29 @@ function validate(ledger: Ledger): Ledger {
 export async function loadLedger(root: string): Promise<Ledger> {
   let bytes;
   try { bytes = await readFile(inside(root, 'runs/p5-notifications/ledger.json'), 'utf8'); }
-  catch (error) { if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return { version: 'p5-v1', deliveries: [], runs: [], observations: [] }; throw error; }
+  catch (error) { if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return { version: 'p5-v2', deliveries: [], runs: [], observations: [] }; throw error; }
   const envelope = object(JSON.parse(bytes)); const payload = string(envelope.payload);
   if (envelope.schemaVersion !== 1 || sha256(payload) !== envelope.sha256) throw new Error('P5_LEDGER_HASH_MISMATCH');
-  return validate(ledgerContract.parse(JSON.parse(payload)));
+  const raw = object(JSON.parse(payload));
+  if (raw.version !== 'p5-v1') return validate(ledgerContract.parse(raw));
+  if (!Array.isArray(raw.observations)) throw new Error('INVALID_LEGACY_OBSERVATIONS');
+  const migrated = validate(ledgerContract.parse({ ...raw, version: 'p5-v2', observations: raw.observations.map(o => ({ ...object(o), material: null })) }));
+  // 只从已校验、版本相符的历史包补元数据；缺失原快照时保持未知，不猜附件先后。
+  const pending = new Set(migrated.observations);
+  const visited = new Set<string>();
+  for (const run of [...migrated.runs].reverse()) {
+    if (!pending.size) break;
+    if (!run.sourceRun || visited.has(run.sourceRun)) continue;
+    visited.add(run.sourceRun);
+    let snapshot;
+    try { snapshot = await loadSnapshot(root, run.sourceRun); }
+    catch (error) { if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') continue; throw error; }
+    for (const observation of pending) {
+      const packet = snapshot.packets.find(p => p.notice.key === observation.subject && p.notice.version === observation.version && p.notice.purpose === observation.purpose);
+      if (packet) { observation.material = materialRevision(packet.notice); pending.delete(observation); }
+    }
+  }
+  return migrated;
 }
 export async function saveLedger(root: string, ledger: Ledger): Promise<void> {
   const payload = json(validate(ledgerContract.parse(ledger)));

@@ -12,7 +12,7 @@
     "version": {
       "type": "string",
       "enum": [
-        "p5-v1"
+        "p5-v2"
       ]
     },
     "deliveries": {
@@ -412,7 +412,8 @@
           "version",
           "contentHash",
           "fetchedAt",
-          "relevant"
+          "relevant",
+          "material"
         ],
         "properties": {
           "purpose": {
@@ -454,6 +455,93 @@
             "enum": [
               "yes",
               "no"
+            ]
+          },
+          "material": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bodyHash",
+                  "fetchedAt",
+                  "attachments"
+                ],
+                "properties": {
+                  "bodyHash": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "fetchedAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "attachments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "contentHash",
+                        "observation"
+                      ],
+                      "properties": {
+                        "contentHash": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "observation": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "required": [
+                                "archiveId",
+                                "attachmentId",
+                                "revision"
+                              ],
+                              "properties": {
+                                "archiveId": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 100
+                                },
+                                "attachmentId": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 100
+                                },
+                                "revision": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                }
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "minItems": 0,
+                    "maxItems": 1000
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
             ]
           }
         }

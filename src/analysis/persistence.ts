@@ -1,11 +1,11 @@
 import { readFile, readdir } from 'node:fs/promises';
-import { object, string } from '../archive/config.js';
+import { object, string, readObservation } from '../archive/config.js';
 import { atomicFile, inside, sha256 } from '../store/files.js';
 import { companyContract } from './contract.js';
 import type { AnalysisSnapshot, AttachmentText, Notice, Packet, RuleConfig } from './model.js';
 import { makePacket } from './packets.js';
 import { associate } from './rules.js';
-import { analysisFields } from './fields.js';
+import { readStoredFields } from './fields.js';
 import { validateResult, type ValidatedAnalysis } from './validation.js';
 
 export const json = (value: unknown): string => JSON.stringify(value, null, 2) + '\n';
@@ -26,12 +26,13 @@ function parseNotice(value: unknown): Notice {
   if (w.timezone !== 'Asia/Shanghai' || (v.attachmentCount !== null && (!Number.isInteger(v.attachmentCount) || Number(v.attachmentCount) < 0))) throw new Error('INVALID_NOTICE');
   const attachments: AttachmentText[] = array(v.attachments).map(raw => {
     const f = object(raw); return { name: string(f.name), sha256: string(f.sha256), parseSha: string(f.parseSha), status: string(f.status),
-      units: array(f.units).map(rawUnit => { const u = object(rawUnit); return { locator: string(u.locator), text: emptyText(u.text) }; }) };
+      units: array(f.units).map(rawUnit => { const u = object(rawUnit); return { locator: string(u.locator), text: emptyText(u.text) }; }),
+      ...(f.observation === undefined ? {} : { observation: readObservation(f.observation) }) };
   });
   const text = emptyText(v.text);
   return { key: string(v.key), version: string(v.version), purpose: v.purpose,
     listing: { site: string(l.site), id: string(l.id), title: string(l.title), url: string(l.url), publishedAt: nullable(l.publishedAt), region: nullable(l.region), noticeType: nullable(l.noticeType), evidence: string(l.evidence) },
-    text, completeness: string(v.completeness), fields: analysisFields(text), fetchedAt: nullable(v.fetchedAt),
+    text, completeness: string(v.completeness), fields: readStoredFields(v.fields), fetchedAt: nullable(v.fetchedAt),
     attachmentCount: v.attachmentCount === null ? null : Number(v.attachmentCount), attachments,
     window: { timezone: 'Asia/Shanghai', startAt: string(w.startAt), endAt: string(w.endAt), startDate: string(w.startDate), endDate: string(w.endDate) },
     queryComplete: boolean(v.queryComplete), queryIds: array(v.queryIds).map(string) };

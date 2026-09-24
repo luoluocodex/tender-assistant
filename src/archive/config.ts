@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
-import type { ArchiveConfig } from './model.js';
+import type { ArchiveConfig, ArchiveObservation } from './model.js';
 
 /** 配置与报告是数据，先验证类型和范围再使用。 */
 export function object(value: unknown): Record<string, unknown> {
@@ -10,6 +10,12 @@ export function object(value: unknown): Record<string, unknown> {
 export function string(value: unknown): string {
   if (typeof value !== 'string' || !value.trim()) throw new Error('缺少非空字符串');
   return value;
+}
+/** 校验归档观察标识，不从文件时间或正文抓取时间推断附件新旧。 */
+export function readObservation(value: unknown): ArchiveObservation {
+  const v = object(value);
+  if (!Number.isSafeInteger(v.revision) || Number(v.revision) < 1) throw new Error('INVALID_ARCHIVE_REVISION');
+  return { archiveId: string(v.archiveId), attachmentId: string(v.attachmentId), revision: Number(v.revision) };
 }
 /** 运行数据和源码分开；不允许把数据根目录设为磁盘根或源码目录。 */
 export async function archiveConfig(project: string): Promise<ArchiveConfig> {

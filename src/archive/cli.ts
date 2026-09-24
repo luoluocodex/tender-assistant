@@ -79,7 +79,7 @@ try {
           const downloaded = await pending;
           // 人工选择可能来自其它页面：保留其实际下载来源，不自动认定其与目标材料完全一致。
           const parsed = await parseIsolated(downloaded.bytes, config, controller.signal);
-          await store.save(item, downloaded.bytes, parsed, downloaded.url, 'manual-browser-download-review-required');
+          await store.save(item, downloaded.bytes, parsed, downloaded.url, 'manual-browser-download-review-required', true);
           item.status = 'partial'; item.reason = 'MANUAL_DOWNLOAD_SOURCE_REQUIRES_REVIEW'; store.update(item); await store.setStatus(jobId, 'partial'); process.exitCode = 2;
           console.log(JSON.stringify({ jobId, report: await store.report(jobId), status: 'partial' }));
         } else {

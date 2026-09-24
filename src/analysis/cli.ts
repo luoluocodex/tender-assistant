@@ -10,6 +10,7 @@ import { companyContract, resultContract, labelsContract } from './contract.js';
 import { importResult, loadSnapshot, saveSnapshot, runPath, json, readResults } from './persistence.js';
 import { evaluate, writeReport } from './report.js';
 import type { AnalysisSnapshot, Notice } from './model.js';
+import { analysisFields } from './fields.js';
 
 const help = `P3 离线过滤、证据包与 Codex 会话分析（不调用付费 API）
   --prepare --report <P1报告> [--archive-job <P2任务>] [--company-fixture <合成资料>]
@@ -53,7 +54,7 @@ async function main(): Promise<void> {
       const trackedKeys = new Set([...(v.track ?? []), ...(previous?.packets.filter(p => p.decision.tracked).map(p => p.notice.key) ?? [])]);
       for (const key of trackedKeys) if (![...notices.values()].some(n => n.key === key)) throw new Error('UNKNOWN_TRACKED_NOTICE');
       const trackedProjects = new Set([...notices.values()].filter(n => trackedKeys.has(n.key)).map(projectId));
-      const packets = [...notices.values()].map(n => makePacket(n, rules, prompts, company, trackedProjects.has(projectId(n))));
+      const packets = [...notices.values()].map(n => makePacket({ ...n, fields: analysisFields(n.text) }, rules, prompts, company, trackedProjects.has(projectId(n))));
       const id = `p3-${sha256(json({ report: source.reportHash, packets: packets.map(p => p.inputHash) })).slice(0, 24)}`;
       let snapshot: AnalysisSnapshot;
       try { await access(resolve(runPath(config.runtimeRoot, id), 'snapshot.json')); snapshot = await loadSnapshot(config.runtimeRoot, id); }

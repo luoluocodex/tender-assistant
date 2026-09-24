@@ -25,10 +25,13 @@ export const runContract = shape({ id: text(80), purpose: choice('formal', 'diag
   deliveryIds: array(text(64), 0, 100000), added: integer, reused: integer, errorCode: nullable(text(100)),
   history: array(shape({ status: runState, at: text(50), errorCode: nullable(text(100)) }), 1, 1000) });
 export type NotifyRun = ReturnType<typeof runContract.parse>;
+const materialContract = shape({ bodyHash: text(64), fetchedAt: nullable(text(50)), attachments: array(shape({
+  contentHash: text(64), observation: nullable(shape({ archiveId: text(100), attachmentId: text(100), revision: integer })),
+}), 0, 1000) });
 export const observationContract = shape({ purpose: choice('formal', 'diagnostic'), subject: text(200), version: text(64),
-  contentHash: text(64), fetchedAt: nullable(text(50)), relevant: choice('yes', 'no') });
+  contentHash: text(64), fetchedAt: nullable(text(50)), relevant: choice('yes', 'no'), material: nullable(materialContract) });
 export type Observation = ReturnType<typeof observationContract.parse>;
-export const ledgerContract = shape({ version: choice('p5-v1'), deliveries: array(deliveryContract, 0, 100000),
+export const ledgerContract = shape({ version: choice('p5-v2'), deliveries: array(deliveryContract, 0, 100000),
   runs: array(runContract, 0, 10000), observations: array(observationContract, 0, 100000) });
 export type Ledger = ReturnType<typeof ledgerContract.parse>;
 export interface DeliveryOutcome { state: 'previewed' | 'failed' | 'unknown'; receiptHash: string | null; errorCode: string | null }

@@ -18,6 +18,7 @@
 
 ## 文档与配置
 
+- [2026-09-24 审查缺陷修复](D:/creator/coding_project/tender-assistant/docs/2026-09-24-审查缺陷修复.md)：6 项修复、合成回归、数据库与通知账本升级，以及旧材料处理边界。
 - [最终技术方案](D:/creator/coding_project/tender-assistant/docs/招投标助手最终技术方案.md)：当前实际架构、目录、提示词与脚本组织、覆盖边界。
 - [操作与维护手册](D:/creator/coding_project/tender-assistant/docs/操作与维护手册.md)：日常操作、人工接管、恢复、备份、更新与卸载。
 - [P6 验收与交接](D:/creator/coding_project/tender-assistant/docs/P6-验收与交接.md)、[机器复核记录](D:/creator/coding_project/tender-assistant/docs/P6-verification.json)：本轮检查、未完成项与用户签收状态。
@@ -65,7 +66,7 @@ pnpm run collect:p1
 
 当前请求操作间隔至少 6 秒，每次最多运行 20 分钟。遇到 HTTP 403、429 或人工验证页面，停止该站后续查询与详情，不自动重试；保留进度和原因，其他站点可以继续。此前广东站限流发生在较短间隔下，提高间隔后的广东稳定性尚未复测，不能承诺避免限流。
 
-从 P5 起，P1 独立 CLI 也与归档、分析、通知及备份共用运行数据目录的 `archive.lock`。有其他步骤在运行时拒绝启动新采集，不强制停止原进程；正常结束/取消释放，已退出进程的遗留锁由原有锁逻辑处理。
+从 P5 起，P1 独立 CLI 也与归档、分析、通知及备份共用运行数据目录的锁。2026-09-24 修复后，由常驻 `archive.lock.sqlite` 文件的 SQLite 排他锁保证互斥，`archive.lock` 保存 PID 标记。其他步骤运行时拒绝启动新采集；正常结束、取消或进程退出释放互斥，旧 PID 标记在互斥内回收。不要删除互斥数据库或混跑新旧程序。
 
 | 参数 | 含义 |
 |---|---|

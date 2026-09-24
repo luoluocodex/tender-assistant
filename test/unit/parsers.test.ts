@@ -62,3 +62,19 @@ test('限流和登录页不是零结果，正常公告提及验证码不误报',
   assert(pageProblem('登录', '请先登录后继续'));
   assert.equal(pageProblem('公告', '普通公告正文'.repeat(500) + '供应商登录时输入验证码'), null);
 });
+
+test('缺失截止时间不借用相邻字段；同行日期按标签隔离且多值保留冲突', () => {
+  for (const missing of ['详见采购文件', '', '待定']) {
+    const fields = extractFields(`提交投标文件截止时间：${missing}\n开标时间：2026年09月25日18:00:00`);
+    assert.equal(fields.dates.some(d => d.kind === 'response-deadline'), false);
+    assert.equal(fields.dates.filter(d => d.kind === 'opening').length, 1);
+  }
+  const mixed = extractFields('报名截止时间：2026年09月24日12:00；投标截止时间：2026年09月25日18:00；开标时间：2026年09月26日09:00');
+  assert.equal(mixed.dates.find(d => d.kind === 'response-deadline')!.raw, '2026年09月25日18:00');
+  const multiline = extractFields('提交投标文件截止时间：\n2026年09月25日18:00\n如供应商不足三家自动顺延\n开标时间：2026年09月26日09:00');
+  assert.match(multiline.dates.find(d => d.kind === 'response-deadline')!.evidence, /自动顺延/);
+  const conflict = extractFields('投标截止时间：2026年09月25日18:00 或 2026年09月26日18:00');
+  assert.equal(conflict.dates.filter(d => d.kind === 'response-deadline').length, 2);
+  const shared = extractFields('四、提交投标文件截止时间、开标时间和地点\n时间：2026年09月25日18:00\n地点：合成地点');
+  assert.deepEqual(shared.dates.map(d => [d.kind, d.raw]), [['response-deadline', '2026年09月25日18:00'], ['opening', '2026年09月25日18:00']]);
+});

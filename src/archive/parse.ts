@@ -13,7 +13,7 @@ export async function parseIsolated(bytes: Buffer, config: ArchiveConfig, signal
       if (finished) return; finished = true; clearTimeout(timer); signal.removeEventListener('abort', abort);
       void worker.terminate().finally(() => { if (error) reject(error); else resolve(result!); });
     };
-    const fallback = (status: 'timeout' | 'invalid', reason: string): ParsedFile => ({ parserVersion: 'p2-v1', kind: fileKind(bytes), status, reason, units: [], members: [] });
+    const fallback = (status: 'timeout' | 'invalid', reason: string): ParsedFile => ({ parserVersion: 'p2-v2', kind: fileKind(bytes), status, reason, units: [], members: [] });
     const abort = (): void => finish(undefined, signal.reason ?? new Error('取消'));
     const timer = setTimeout(() => finish(fallback('timeout', 'PARSER_TIMEOUT')), config.parseTimeoutMs);
     signal.addEventListener('abort', abort, { once: true });

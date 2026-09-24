@@ -3,10 +3,15 @@ import { ArchiveError } from './model.js';
 import type { ParsedFile } from './model.js';
 import { object } from './config.js';
 
-function xml(bytes: Buffer): unknown {
+function xml(bytes: Buffer, preserveOrder = false): unknown {
   const text = bytes.toString('utf8');
   if (text.length > 20_000_000 || /<!DOCTYPE|<!ENTITY/i.test(text) || XMLValidator.validate(text) !== true) throw new ArchiveError('INVALID_OR_UNSAFE_XML');
-  return new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@', parseTagValue: false, processEntities: false }).parse(text);
+  return new XMLParser({ preserveOrder, trimValues: !preserveOrder, ignoreAttributes: false, attributeNamePrefix: '@', parseTagValue: false, processEntities: false }).parse(text);
+}
+function paragraphs(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value.flatMap(paragraphs);
+  if (!value || typeof value !== 'object') return [];
+  return Object.entries(value).flatMap(([key, children]) => key === 'w:p' ? [children] : paragraphs(children));
 }
 function values(value: unknown, key: string): unknown[] {
   if (Array.isArray(value)) return value.flatMap(x => values(x, key));
@@ -25,8 +30,8 @@ export function officeUnits(entries: Array<{ name: string; bytes: Buffer }>, kin
   const units: ParsedFile['units'] = [];
   if (kind === 'docx') {
     for (const entry of entries.filter(e => /^word\/(document|footnotes|endnotes|header\d+|footer\d+)\.xml$/.test(e.name))) {
-      const paragraphs = values(xml(entry.bytes), 'w:p');
-      paragraphs.forEach((p, i) => { const content = values(p, 'w:t').map(text).join(''); if (content.trim()) units.push({ locator: `${entry.name}:paragraph:${i + 1}`, text: content }); });
+      // 有序节点数组不能把 w:p 的子节点误当成多个段落；表格和超链接也按原顺序遍历。
+      paragraphs(xml(entry.bytes, true)).forEach((p, i) => { const content = values(p, 'w:t').map(text).join(''); if (content.trim()) units.push({ locator: `${entry.name}:paragraph:${i + 1}`, text: content }); });
     }
   } else {
     const shared = entries.find(e => e.name === 'xl/sharedStrings.xml');

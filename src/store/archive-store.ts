@@ -3,9 +3,10 @@ import { randomUUID } from 'node:crypto';
 import { readFile, mkdir, copyFile, readdir, appendFile } from 'node:fs/promises';
 import type { ArchiveItem, Candidate, ParsedFile } from '../archive/model.js';
 import { inside, sha256, atomicFile } from './files.js';
-import { object, string } from '../archive/config.js';
+import { object, string, readObservation } from '../archive/config.js';
 
 interface StoredFile { sha256: string; size: number; kind: string; objectPath: string; parsePath: string; parseSha: string; parseStatus: string }
+interface ReusableFile extends StoredFile { sourceReviewRequired: boolean; observation?: ArchiveItem['observation'] }
 interface Job { id: string; status: string; purpose: string; createdAt: string; updatedAt: string; sourceReport: string }
 const json = (value: unknown): string => JSON.stringify(value, null, 2) + '\n';
 
@@ -14,6 +15,8 @@ function readItem(raw: string): ArchiveItem {
   const nullable = (key: string): string | null => v[key] === null ? null : string(v[key]);
   return { id: string(v.id), jobId: string(v.jobId), status: string(v.status), reason: typeof v.reason === 'string' ? v.reason : '',
     sha256: nullable('sha256'), objectPath: nullable('objectPath'), parsePath: nullable('parsePath'), parseStatus: nullable('parseStatus'), parseSha: typeof v.parseSha === 'string' ? v.parseSha : null, reused: v.reused === true,
+    sourceReviewRequired: v.sourceReviewRequired === true || /MANUAL_DOWNLOAD_SOURCE_REQUIRES_REVIEW|manual-browser-download/.test(String(v.reason)),
+    ...(v.observation === undefined ? {} : { observation: readObservation(v.observation) }),
     candidate: { purpose: c.purpose === 'formal' ? 'formal' : 'diagnostic', noticeKey: string(c.noticeKey), noticeVersion: string(c.noticeVersion), noticeId: string(c.noticeId), noticeUrl: string(c.noticeUrl), title: string(c.title), noticePayload: c.noticePayload, attachmentId: string(c.attachmentId), name: string(c.name), url: string(c.url) } };
 }
 
@@ -24,13 +27,17 @@ export class ArchiveStore {
     this.db = new DatabaseSync(inside(root, 'archive.sqlite'), { timeout: 5000, defensive: true });
     this.db.exec('PRAGMA foreign_keys=ON; PRAGMA journal_mode=DELETE;');
     const version = this.db.prepare('PRAGMA user_version').get()?.user_version;
-    if (version !== 0 && version !== 1) { this.db.close(); throw new Error('不支持的归档数据库版本'); }
+    if (version !== 0 && version !== 1 && version !== 2) { this.db.close(); throw new Error('不支持的归档数据库版本'); }
     this.db.exec(`CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY, payload TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS notices(version TEXT PRIMARY KEY, notice_key TEXT NOT NULL, path TEXT NOT NULL, sha TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS objects(sha TEXT PRIMARY KEY, payload TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS links(attachment_id TEXT NOT NULL, sha TEXT NOT NULL REFERENCES objects(sha), created_at TEXT NOT NULL, source_url TEXT NOT NULL, PRIMARY KEY(attachment_id,sha));
       CREATE TABLE IF NOT EXISTS items(id TEXT PRIMARY KEY, job_id TEXT NOT NULL REFERENCES jobs(id), payload TEXT NOT NULL);
-      PRAGMA user_version=1;`);
+      CREATE TABLE IF NOT EXISTS archive_meta(id INTEGER PRIMARY KEY CHECK(id=1), archive_id TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS observations(revision INTEGER PRIMARY KEY AUTOINCREMENT, attachment_id TEXT NOT NULL, payload TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS observations_attachment ON observations(attachment_id, revision);
+      PRAGMA user_version=2;`);
+    this.db.prepare('INSERT OR IGNORE INTO archive_meta VALUES (1,?)').run(randomUUID());
   }
   close(): void { this.db.close(); }
 
@@ -77,34 +84,53 @@ export class ArchiveStore {
     const v = object(JSON.parse(string(row.payload)));
     return { sha256: string(v.sha256), size: Number(v.size), kind: string(v.kind), objectPath: string(v.objectPath), parsePath: string(v.parsePath), parseSha: string(v.parseSha), parseStatus: string(v.parseStatus) };
   }
-  async reusable(attachmentId: string): Promise<StoredFile | null> {
+  async reusable(attachmentId: string): Promise<ReusableFile | null> {
+    const latest = this.db.prepare('SELECT payload FROM observations WHERE attachment_id=? ORDER BY revision DESC LIMIT 1').get(attachmentId);
+    if (latest) {
+      const item = readItem(string(latest.payload));
+      if (!item.sha256) return null;
+      const file = this.file(item.sha256);
+      if (!file || !item.objectPath || !item.parsePath || !item.parseSha || !item.parseStatus) return null;
+      const saved = { ...file, objectPath: item.objectPath, parsePath: item.parsePath, parseSha: item.parseSha, parseStatus: item.parseStatus,
+        sourceReviewRequired: item.sourceReviewRequired === true, ...(item.observation ? { observation: item.observation } : {}) };
+      return await this.fileValid(saved) ? saved : null;
+    }
     const row = this.db.prepare('SELECT sha FROM links WHERE attachment_id=? ORDER BY created_at DESC,rowid DESC LIMIT 1').get(attachmentId);
     if (!row) return null;
     const file = this.file(string(row.sha)); if (!file) return null;
-    if (await this.fileValid(file)) return file;
+    // 旧库没有观察记录，保守保留同一关联上的人工来源复核标记。
+    const prior = this.db.prepare("SELECT payload FROM items WHERE json_extract(payload,'$.candidate.attachmentId')=? AND json_extract(payload,'$.sha256')=?").all(attachmentId, file.sha256);
+    const sourceReviewRequired = prior.some(row => readItem(string(row.payload)).sourceReviewRequired);
+    if (await this.fileValid(file)) return { ...file, sourceReviewRequired };
     return null;
   }
   private async fileValid(file: StoredFile): Promise<boolean> {
     try { return sha256(await readFile(inside(this.root, file.objectPath))) === file.sha256 && sha256(await readFile(inside(this.root, file.parsePath))) === file.parseSha; } catch { return false; }
   }
-  async save(item: ArchiveItem, bytes: Buffer, parsed: ParsedFile, finalUrl: string, method: string): Promise<void> {
+  async save(item: ArchiveItem, bytes: Buffer, parsed: ParsedFile, finalUrl: string, method: string, sourceReviewRequired = method === 'manual-browser-download-review-required'): Promise<void> {
     const hash = sha256(bytes); const extension = ['pdf','doc','docx','xlsx','zip','rar'].includes(parsed.kind) ? parsed.kind : 'bin';
     const objectPath = `objects/${hash.slice(0,2)}/${hash}.${extension}`;
     const parsedText = json(parsed); const parseSha = sha256(parsedText); const parsePath = `parsed/${hash}-${parseSha.slice(0,12)}.json`;
     await atomicFile(inside(this.root, objectPath), bytes); await atomicFile(inside(this.root, parsePath), parsedText);
     const file: StoredFile = { sha256: hash, size: bytes.length, kind: parsed.kind, objectPath, parsePath, parseSha, parseStatus: parsed.status };
-    this.applyFile(item, file, false); item.reason = `${method}:${parsed.reason || 'OK'}`;
+    this.applyFile(item, { ...file, sourceReviewRequired }, false); item.reason = sourceReviewRequired ? 'MANUAL_DOWNLOAD_SOURCE_REQUIRES_REVIEW' : `${method}:${parsed.reason || 'OK'}`;
     this.db.exec('BEGIN IMMEDIATE');
     try {
       this.db.prepare('INSERT INTO objects VALUES (?,?) ON CONFLICT(sha) DO UPDATE SET payload=excluded.payload').run(hash, json(file));
       this.db.prepare('INSERT OR IGNORE INTO links VALUES (?,?,?,?)').run(item.candidate.attachmentId, hash, new Date().toISOString(), finalUrl);
+      const inserted = this.db.prepare('INSERT INTO observations(attachment_id,payload) VALUES (?,?)').run(item.candidate.attachmentId, json(item));
+      item.observation = { archiveId: string(this.db.prepare('SELECT archive_id FROM archive_meta WHERE id=1').get()!.archive_id), attachmentId: item.candidate.attachmentId, revision: Number(inserted.lastInsertRowid) };
+      this.db.prepare('UPDATE observations SET payload=? WHERE revision=?').run(json({ ...item, observedAt: new Date().toISOString(), sourceUrl: finalUrl }), item.observation.revision);
       this.update(item); this.db.exec('COMMIT');
     } catch (error) { this.db.exec('ROLLBACK'); throw error; }
   }
-  applyFile(item: ArchiveItem, file: StoredFile, reused: boolean): void {
+  applyFile(item: ArchiveItem, file: StoredFile & { sourceReviewRequired?: boolean; observation?: ArchiveItem['observation'] }, reused: boolean): void {
     item.sha256 = file.sha256; item.objectPath = file.objectPath; item.parsePath = file.parsePath; item.parseStatus = file.parseStatus;
     item.parseSha = file.parseSha;
-    item.status = file.parseStatus === 'parsed' ? 'complete' : 'partial'; item.reused = reused; item.reason = reused ? 'VERIFIED_CONTENT_REUSED' : '';
+    item.sourceReviewRequired = file.sourceReviewRequired === true;
+    if (file.observation) item.observation = file.observation; else delete item.observation;
+    item.status = file.parseStatus === 'parsed' && !item.sourceReviewRequired ? 'complete' : 'partial'; item.reused = reused;
+    item.reason = item.sourceReviewRequired ? 'MANUAL_DOWNLOAD_SOURCE_REQUIRES_REVIEW' : reused ? 'VERIFIED_CONTENT_REUSED' : '';
   }
 
   /** 不做修复或删除；检出缺失、篡改和 SQLite 引用问题。 */
@@ -114,7 +140,7 @@ export class ArchiveStore {
     const notices = this.db.prepare('SELECT path,sha FROM notices').all();
     for (const row of notices) { try { if (sha256(await readFile(inside(this.root, string(row.path)))) !== row.sha) errors.push('NOTICE_MISMATCH'); } catch { errors.push('NOTICE_MISSING'); } }
     // 旧任务可能引用旧的解析版本；不能只校验 objects 表指向的最新解析结果。
-    for (const row of this.db.prepare('SELECT payload FROM items').all()) {
+    for (const row of this.db.prepare('SELECT payload FROM items UNION ALL SELECT payload FROM observations').all()) {
       const item = readItem(string(row.payload)); if (!item.sha256) continue;
       try {
         if (!item.objectPath || !item.parsePath || sha256(await readFile(inside(this.root, item.objectPath))) !== item.sha256) throw new Error('对象损坏');

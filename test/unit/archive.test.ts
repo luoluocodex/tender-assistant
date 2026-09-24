@@ -81,3 +81,11 @@ test('报告选择保留诊断用途；签名更新不新建公告版本；未�
   assert.equal(first.noticeVersion,second.noticeVersion);assert.equal(first.attachmentId,second.attachmentId);assert.equal(first.purpose,'diagnostic');
   await assert.rejects(candidates(path,['sample:0'],{...config,sources:[]}));
 });
+
+test('DOCX 段落、表格、超链接和连续文字保持原文顺序及段落定位', async () => {
+  const xml = '<w:document><w:body><w:p><w:r><w:t>资格要求：</w:t></w:r></w:p><w:tbl><w:tr><w:tc><w:p><w:r><w:t>甲级资质</w:t></w:r></w:p></w:tc></w:tr></w:tbl><w:p><w:r><w:t>评分条件：</w:t></w:r></w:p><w:tbl><w:tr><w:tc><w:p><w:r><w:t>参考 </w:t></w:r><w:hyperlink><w:r><w:t>附件</w:t></w:r></w:hyperlink><w:r><w:t> 的项目经验</w:t></w:r></w:p></w:tc></w:tr></w:tbl></w:body></w:document>';
+  const parsed = await parseFile(syntheticZip({ 'word/document.xml': xml }), testConfig(await fixtureRoot()));
+  assert.equal(parsed.status, 'parsed');
+  assert.deepEqual(parsed.units.map(u => u.text), ['资格要求：', '甲级资质', '评分条件：', '参考 附件 的项目经验']);
+  assert.deepEqual(parsed.units.map(u => u.locator), [1, 2, 3, 4].map(i => `word/document.xml:paragraph:${i}`));
+});

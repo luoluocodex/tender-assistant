@@ -1,8 +1,9 @@
 import type { Detail, Listing, QueryWindow } from '../model.js';
 import type { Company } from './contract.js';
+import type { ArchiveObservation } from '../archive/model.js';
 
 export interface Evidence { id: string; kind: 'title' | 'body' | 'attachment' | 'company'; locator: string; text: string; sha256: string; sourceHash: string }
-export interface AttachmentText { name: string; sha256: string; parseSha: string; status: string; units: Array<{ locator: string; text: string }> }
+export interface AttachmentText { name: string; sha256: string; parseSha: string; status: string; units: Array<{ locator: string; text: string }>; observation?: ArchiveObservation }
 export interface Notice {
   key: string; version: string; purpose: 'formal' | 'diagnostic'; listing: Listing; text: string;
   completeness: string; fields: Detail['fields']; fetchedAt: string | null;
