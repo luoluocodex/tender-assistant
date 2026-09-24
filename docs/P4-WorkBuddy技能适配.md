@@ -2,6 +2,8 @@
 
 日期：2026-09-24（Asia/Shanghai）。任务类型：宿主集成、兼容修复、文档与测试。用户明确授权适配、安装到本机 WorkBuddy，并验证实际识别与调用。没有提交或推送 Git。
 
+同日后续采集分享出现 `spawnSync whoami EBUSY` 和日志缺失，已修复业务程序的同步依赖并补齐默认安全配置下的 WorkBuddy 桌面复验：四项本地运行检查 passed。以下保留早期 5.5.6 只读验证事实；新增修复、当前 5.6.2 证据及正式采集未重跑的边界见[采集故障修复记录](2026-09-24-WorkBuddy采集故障修复.md)。
+
 ## 1. 结果与范围
 
 已安装到 `C:\Users\14629\.workbuddy\skills\tender-assistant`。WorkBuddy **5.5.6** 的“技能 → 我安装的”实际显示 `tender-assistant`，详情可读取技能正文；通过“去试试”建立“验证招标助手只读调用”对话，实际调用 Skill、PowerShell 和 Read 完成环境检查及前三条正式结果读取。

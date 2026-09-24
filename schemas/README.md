@@ -1,5 +1,7 @@
 # JSON 字段规范
 
+P4 诊断契约（2026-09-24）：doctor 在 schemaVersion=1 下增加 `runtime.subprocess/windowsIdentity/directoryPermissions/browser`，每项 `status=passed|failed|not-checked|not-applicable`，失败可附 `message`。`collectionReadiness=not-checked|local-runtime-passed|failed` 表示是否执行并通过扩展检查；`ready` 仅针对本次已执行检查。`--runtime-check` 不验证网站或账号。包装器 `-LogFile` 为 UTF-8 JSONL，每行含 `timestamp/stage/stream/text`，完成记录附 `exitCode`；最后 `stage=wrapper, stream=status, text=finished` 才是完整命令结束记录。doctor 退出 2 仍可生成 `-OutputFile` 失败检查 JSON。字段说明及调用边界见[故障修复记录](../docs/2026-09-24-WorkBuddy采集故障修复.md)。
+
 P1 查询天数契约（2026-09-24）：CLI `collect --days N` 接收 1～90 的整数；未给值时读取 `config/p0-baseline.json.dateRange.days`，默认值同样校验。内部 `RunConfig.days` 为必填 number，`createWindow(now, days)` 不再内置默认天数。新 P1 `report.json.queryDays` 记录本次天数，`window` 保留起止日期、截止时刻和时区；旧报告未添加此字段，P3 仍按原 `window` 消费，不重写历史数据。超限报 `QUERY_DAYS_EXCEEDED`，非正整数报 `INVALID_QUERY_DAYS`，退出码均为 1；缺值或未知参数由 CLI 参数解析器拒绝，均不创建采集任务。
 
 - `analysis-result.schema.json`：单份公告的模型结果，包含版本、相关性、事实/推断/缺口、逐条资格、引用和限制。

@@ -16,6 +16,10 @@ async function isolatedProject(parent: string): Promise<string> {
   const target = join(parent, 'project'); await mkdir(target);
   for (const path of ['src', 'config', 'prompts', 'schemas', 'skills', 'integrations', 'package.json', 'tsconfig.json'])
     await cp(join(project, path), join(target, path), { recursive: true });
+  // 合成项目固定中文关键词，用户对正式配置的调整不影响安装测试。
+  const baselinePath = join(target, 'config/p0-baseline.json');
+  const baseline = JSON.parse(await readFile(baselinePath, 'utf8')); baseline.business.keywords = ['网站开发'];
+  await writeFile(baselinePath, JSON.stringify(baseline));
   // 包装器会编译：输出必须隔离，不能在其它并行测试读取 dist 时截断这些文件。
   await symlink(join(project, 'node_modules'), join(target, 'node_modules'), 'junction');
   return target;

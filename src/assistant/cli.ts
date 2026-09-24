@@ -6,10 +6,11 @@ import { archiveConfig } from '../archive/config.js';
 import { json } from '../analysis/persistence.js';
 import { selectSnapshot } from './catalog.js';
 import { resultView, queueView, packetView } from './views.js';
+import { runtimeCheck } from './runtime-check.js';
 
 const project = fileURLToPath(new URL('../../../', import.meta.url));
 const help = `招投标助手 P4 统一入口
-  doctor                                  检查本地运行条件，不登录或采集
+  doctor [--runtime-check]                 检查版本与子进程；可增加临时目录权限和有头空白页检查
   results [--purpose formal|diagnostic] [--run p3-id] [--offset 0] [--limit 10]
   queue   [同上]                           列出适合继续分析的待办
   packet  --run p3-id --packet packet-id [--purpose ...] [--offset 0] [--limit 3]
@@ -21,7 +22,7 @@ collect/archive/analyze/notify 使用 --help 查看各自参数；退出码保�
 默认读取最新正式 P3 快照，零结果或没有快照不切换诊断用途，不自动联网。
 这是已有快照的预览；无实际通知发送、无周期任务、无真实公司匹配。`;
 
-async function doctor() {
+async function doctor(extended: boolean) {
   const config = await archiveConfig(project);
   const required = ['node_modules/typescript/bin/tsc', 'dist/src/cli.js', 'dist/src/archive/cli.js', 'dist/src/analysis/cli.js', 'dist/src/notify/cli.js'];
   const missing: string[] = [];
@@ -29,9 +30,12 @@ async function doctor() {
   const [major = 0, minor = 0] = process.versions.node.split('.').map(Number);
   const nodeSupported = major > 24 || (major === 24 && minor >= 13);
   const baseline: unknown = JSON.parse(await readFile(resolve(project, 'config/p0-baseline.json'), 'utf8'));
+  const runtime = await runtimeCheck(project, extended);
   return { schemaVersion: 1, action: 'doctor', project, runtimeRoot: config.runtimeRoot, node: process.versions.node,
-    ready: nodeSupported && missing.length === 0, missing, nodeSupported, baseline,
-    checked: '仅程序文件与版本；未检查政府站点登录、联网或浏览器运行状态' };
+    ready: nodeSupported && missing.length === 0 && Object.values(runtime).every(item => item.status !== 'failed'), missing, nodeSupported, baseline, runtime,
+    collectionReadiness: !extended ? 'not-checked' : Object.values(runtime).every(item => item.status !== 'failed') ? 'local-runtime-passed' : 'failed',
+    checked: extended ? '程序文件、版本、异步子进程、临时目录权限和有头空白页；未检查政府站点访问或登录'
+      : '程序文件、版本、异步子进程及 Windows 用户识别；未检查目录权限应用、浏览器或政府站点' };
 }
 
 async function main() {
@@ -46,8 +50,8 @@ async function main() {
   }
   if (!['doctor', 'results', 'queue', 'packet'].includes(action)) throw new Error('UNKNOWN_ACTION: 使用 --help');
   if (action === 'doctor') {
-    if (args.length) throw new Error('DOCTOR_TAKES_NO_ARGUMENTS');
-    const result = await doctor(); process.stdout.write(json(result)); process.exitCode = result.ready ? 0 : 2; return;
+    const { values } = parseArgs({ args, strict: true, allowPositionals: false, options: { 'runtime-check': { type: 'boolean' } } });
+    const result = await doctor(values['runtime-check'] === true); process.stdout.write(json(result)); process.exitCode = result.ready ? 0 : 2; return;
   }
   const { values: v } = parseArgs({ args, strict: true, allowPositionals: false, options: {
     purpose: { type: 'string', default: 'formal' }, run: { type: 'string' }, packet: { type: 'string' },

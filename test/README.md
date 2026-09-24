@@ -24,3 +24,5 @@ P2 测试仅在 `output/playwright/tests/p2-synthetic-*` 中生成材料；网�
 - `archive.test.ts` / `parsers.test.ts`：DOCX 段落/表格/超链接顺序，日期所属字段、合并标题、缺失值及多值冲突。
 
 `skill-install.test.ts` 的包装脚本在合成项目副本中编译，只通过 node_modules 目录联接读取现有依赖，避免并行测试读写同一份项目 dist。目录联接不作为清理目标。所有新增数据仍在 `output/playwright/tests/`，不连接正式归档；测试通过不改变 P1—P6 的业务验收结论。
+
+WorkBuddy 故障回归：`skill-wrapper.test.ts` 使用合成 CLI 验证双流 UTF-8、较大 stderr 不死锁、中文/引号/反斜线参数边界、退出码 0/1/2/3、编译或绑定失败日志、覆盖拒绝发生在业务执行前；`windows-access.test.ts` 检查可重复的真实 Windows ACL 和工具不可用时停止；`assistant-cli.test.ts` 检查子进程、有头空白页及浏览器缺失诊断。安装用例固定合成关键词，不改用户正式配置。无需访问政府网站或写正式数据目录。

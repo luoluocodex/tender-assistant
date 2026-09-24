@@ -2,6 +2,8 @@
 
 下列命令都通过本技能 `scripts/tender.ps1`，或在项目根执行 `pnpm run assistant`。读取文件先用 `doctor` 获取项目和数据根目录。结果是已有快照；`createdAt`、公告日期和查询窗口都必须保留。
 
+WorkBuddy 调用使用 `-LogFile <新文件.jsonl>` 保留每一阶段的标准输出、错误和退出码；用 Read 读取，不能因为工具没回显就重跑。首次采集或遇子进程错误，先 `doctor --runtime-check`，分别核对 `runtime.subprocess/windowsIdentity/directoryPermissions/browser`。此检查只使用本地临时空目录和空白页，不能证明网站可访问。目录权限失败时程序停止，不跳过 ACL 检查。
+
 ## 采集和归档
 
 1. `collect --days N` 按用户指定的 1～90 个自然日执行正式查询；未指定时间范围时省略 `--days`，读取基线默认天数（当前 7）。超过 90 天提示并停止，不能自动截断或拆分绕过；命令错误退出 1，不创建采集任务。有效执行的退出码 2 表示部分完成，仍可用返回的 P1 `report.json` 路径准备分析，但必须显示不完整原因及实际 `queryDays/window`；取消、网站登录页、403/429 不可静默重试。恢复前读报告而非重复整批操作。

@@ -172,7 +172,11 @@ WorkBuddy 的安装、使用与验证见 [WorkBuddy 安装说明](integrations/w
 & 'C:/Users/14629/.workbuddy/skills/tender-assistant/scripts/tender.ps1' results --limit 5
 ```
 
-在 WorkBuddy 输入：“使用 tender-assistant 技能查看最近一次正式检索结果，说明查询时间、已分析数量和材料缺口。”也可在输入框用 `/tender-assistant` 选择技能。首次先检查 `doctor`；查看历史结果不会重新采集。
+在 WorkBuddy 输入：“使用 tender-assistant 技能查看最近一次正式检索结果，说明查询时间、已分析数量和材料缺口。”也可在输入框用 `/tender-assistant` 选择技能。首次采集或环境异常先执行 `doctor --runtime-check`，分别验证子进程、Windows 权限及有头空白页；查看历史结果不会重新采集。
+
+所有包装器动作可用 `-LogFile '<新文件.jsonl>'` 保存 UTF-8 标准输出、错误和退出码，再让 WorkBuddy Read 读取，避免仅看到退出码后重复采集。`doctor/results/queue/packet` 仍支持 `-OutputFile`；`doctor` 退出 2 时也保存失败检查 JSON，须看字段而非文件是否存在。正式关键词以当前配置为准（本工作树保留用户已确认的“视频制作”），不由历史“网站开发”示例覆盖。详见[WorkBuddy 采集故障修复](docs/2026-09-24-WorkBuddy采集故障修复.md)。
+
+2026-09-24 用户反馈的 WorkBuddy 桌面复验已核实：默认安全配置下四项本地运行检查通过，退出 0，当前安装副本与源码一致。此结果关闭了本次初始化故障的宿主验证缺口；未补跑正式网站采集，不能替代两站业务验收。
 
 本次安装绑定当前工作树 `C:\Users\14629\.codex\worktrees\70b8\tender-assistant`。在删除或迁移工作树前，须从原位置卸载，再从保留的源码位置重新安装；不能只保留技能目录。Codex 已安装副本的原项目绑定不自动迁移。P0 的 `operation.host=Codex` 保留为历史首轮基线。
 

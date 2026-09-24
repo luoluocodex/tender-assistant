@@ -11,10 +11,24 @@ test('P4 任意工作目录可诊断；拒绝误拼参数、非整数分页与�
   const doctor = run(['doctor']); assert.equal(doctor.status, 0, doctor.stderr);
   assert.equal(JSON.parse(doctor.stdout).project.replace(/[\\/]$/, ''), project);
   assert.equal(JSON.parse(doctor.stdout).ready, true);
+  assert.equal(JSON.parse(doctor.stdout).runtime.subprocess.status, 'passed');
+  assert.equal(JSON.parse(doctor.stdout).collectionReadiness, 'not-checked');
   for (const args of [['unknown'], ['results', '--limt', '5'], ['queue', '--offset', '-1'], ['packet'], ['results', '--limit', '1.5'], ['results', '--purpose', 'fake'], ['doctor', '--run', 'x']]) {
     const result = run(args); assert.equal(result.status, 1, result.stdout);
     assert.equal(JSON.parse(result.stderr).status, 'error');
   }
+});
+
+test('扩展 doctor 区分本地启动通过与浏览器缺失，检查失败不返回 ready', () => {
+  const good = run(['doctor', '--runtime-check']); assert.equal(good.status, 0, good.stderr);
+  assert.equal(JSON.parse(good.stdout).runtime.browser.status, 'passed');
+  assert.equal(JSON.parse(good.stdout).collectionReadiness, 'local-runtime-passed');
+  const bad = spawnSync(process.execPath, [cli, 'doctor', '--runtime-check'], {
+    encoding: 'utf8', timeout: 30000, env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: resolve('output/playwright/tests/nonexistent-doctor-browser') },
+  });
+  assert.equal(bad.status, 2, bad.stderr);
+  const result = JSON.parse(bad.stdout); assert.equal(result.ready, false); assert.equal(result.runtime.browser.status, 'failed');
+  assert.equal(result.runtime.subprocess.status, 'passed');
 });
 
 test('P4 各阶段帮助与原入口一致，原阶段失败退出码不被吞掉', () => {
