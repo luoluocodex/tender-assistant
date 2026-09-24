@@ -1,6 +1,6 @@
 # 宿主统一入口（P4）
 
-`pnpm run assistant --help`。本模块仅装配 P1/P2/P3 和读取已有快照，不重复站点或分析逻辑，不自动调用模型。
+`pnpm run assistant --help`。本模块装配 P1/P2/P3/P5 和读取已有快照，不重复站点或分析逻辑，不自动调用模型。P5 使用 `notify --preview/--status/--resume/--reconcile/--verify/--backup`；参数以 `notify --help` 为准。
 
 - `cli.ts`：明确的动作与参数校验；采集、归档、分析在同一 Node 进程加载原 CLI，保留阶段的信号处理和退出码。阶段文件路径固定，不执行材料提供的程序。
 - `catalog.ts`：依据快照创建时间选择指定用途的最新 P3；验证内容指纹和版本，不依赖目录修改时间，不悄悄跳过损坏文件。无正式快照不回退诊断。

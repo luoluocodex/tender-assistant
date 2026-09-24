@@ -12,6 +12,8 @@
 
 **P4 Codex 技能与统一命令已实现并安装。** 已通过当前会话显式读取技能、调用脚本、分析真实公告并导入结果的闭环；独立命令与技能输出一致。P4 新增 1 份正式公告初步分析，累计正式 4 份、诊断 3 份；新会话自动发现/自动选择技能尚未实测。P1/P3 验收缺口仍保留。
 
+**P5 本地通知预览、去重、恢复与备份验证已实现，完整 P5 验收仍待进行。** 2026-09-24 使用已有真实快照生成正式提示 2 条，重跑新增 0 条；诊断提示 3 条单独标识。通知回执、归档备份与新目录恢复通过，56 项测试通过。实际发送和周期任务继续关闭；未开展连续 3 个实际运行日的试运行。本轮还确认已安装技能出现在可用技能列表中，自动意图选择仍未独立验证。
+
 ## 文档与配置
 
 - [P0 执行记录](D:/creator/coding_project/tender-assistant/docs/P0-范围与环境确认.md)：已确认事项、环境结果、站点能力和 P1 准入条件。
@@ -19,11 +21,13 @@
 - [P2 执行记录](D:/creator/coding_project/tender-assistant/docs/P2-登录附件与归档.md)：真实附件、会话边界、归档结构、恢复操作与验收记录。
 - [P3 执行记录](D:/creator/coding_project/tender-assistant/docs/P3-过滤去重与AI分析.md)：规则、公告版本、提示词、摘要、资格检查、实际成绩与待验收项。
 - [P4 执行记录](D:/creator/coding_project/tender-assistant/docs/P4-Codex技能与统一入口.md)：技能位置、自然语言用法、命令协议、输出样例、安装更新和卸载。
+- [P5 执行记录](D:/creator/coding_project/tender-assistant/docs/P5-通知预览与手动试运行.md)：事件规则、状态与回执、恢复、备份、真实预览样本及待验收项。
 - [执行方案](D:/creator/coding_project/tender-assistant/docs/招投标信息助手执行方案.md)：P0—P6 的总体实施计划。
 - [首轮配置基线](D:/creator/coding_project/tender-assistant/config/p0-baseline.json)：网站开发、广东、最近 7 天、手动、通知预览。
 - [站点能力登记](D:/creator/coding_project/tender-assistant/config/sites.json)：区分前期浏览观察、P1 独立脚本实测和仍未验证的能力。
 - [P1 运行配置](D:/creator/coding_project/tender-assistant/config/p1.json)：访问间隔、页数上限、详情抽样数量与证据位置。
 - [P2 运行配置](D:/creator/coding_project/tender-assistant/config/p2.json)：已确认数据目录、附件来源、体积/解析限制和保存策略。
+- [P5 运行配置](D:/creator/coding_project/tender-assistant/config/p5.json)：本地预览对象、72/24 小时临期窗口、重试上限；不启用外发或调度。
 
 `p0-baseline.json` 保留 P0 的历史标识，P1 读取其中已确认的关键词、地区和运行边界。后续阶段未启用的字段不代表已经实现。`sites.json` 是站点能力记录，P1 适配器只支持已实现的两个来源。
 
@@ -55,6 +59,8 @@ pnpm run collect:p1
 `collect:p1` 自动构建并打开专用的有头 Chromium。手动运行，每次创建独立证据目录；查询截止时刻固定为该次任务开始，随后翻页不延后边界。结束或取消时关闭本次创建的浏览器。测试包含三个仅使用本地合成页面的有头浏览器用例，不请求政府网站。
 
 当前请求操作间隔至少 6 秒，每次最多运行 20 分钟。遇到 HTTP 403、429 或人工验证页面，停止该站后续查询与详情，不自动重试；保留进度和原因，其他站点可以继续。此前广东站限流发生在较短间隔下，提高间隔后的广东稳定性尚未复测，不能承诺避免限流。
+
+从 P5 起，P1 独立 CLI 也与归档、分析、通知及备份共用运行数据目录的 `archive.lock`。有其他步骤在运行时拒绝启动新采集，不强制停止原进程；正常结束/取消释放，已退出进程的遗留锁由原有锁逻辑处理。
 
 | 参数 | 含义 |
 |---|---|
@@ -144,3 +150,19 @@ pnpm run assistant results --purpose diagnostic --limit 3
 ```
 
 `results/queue/packet` 读取已有分析，默认正式用途，不联网或调用模型；技能包装脚本先编译源码。`collect/archive/analyze` 原样转交对应阶段。新采集仍需显式 `collect`，模型分析仍由当前会话读取证据完成；不保证一次指令自动分析全部候选。
+
+## P5 使用入口
+
+可在 Codex 输入：“使用 $tender-assistant 为已有正式结果生成通知预览，说明采集故障和资料缺口。”
+
+```powershell
+pnpm run assistant notify --preview
+pnpm run assistant notify --status
+pnpm run assistant notify --verify
+pnpm run assistant notify --backup
+pnpm run assistant notify --help
+```
+
+`notify --preview --run <P3-ID>` 可固定输入；诊断加 `--purpose diagnostic`。成功生成会返回 P5 运行 ID 和 Markdown 路径；`previewed` 表示本地文件已生成，外部发送始终为 0。重复事件复用预览；已知失败使用 `notify --resume <P5-ID>` 显式恢复，未知结果先 `notify --reconcile <通知ID>`。账本和转换历史保存在 `runs/p5-notifications/`，各次记录在 `runs/p5-*/`，均进入现有备份。
+
+临期仅识别明确到分钟、无冲突/条件延期的响应截止时间。待分析、来源失败和资料不足分别保留，不把 488 条候选说成有效商机。通知对象 `local-user` 只是本地去重标识，不是邮箱或 IM 账号。外部渠道、运行时间及连续试运行需按后续明确范围接入；当前不能仅修改开关就启用。

@@ -1,0 +1,79 @@
+{
+  "phase": "P5",
+  "recordedAt": "2026-09-23T23:59:57.370Z",
+  "executionDateAsiaShanghai": "2026-09-24",
+  "scope": "manual-local-preview",
+  "implementationVerified": true,
+  "fullP5Acceptance": false,
+  "freshGovernmentRequests": 0,
+  "externalSent": 0,
+  "scheduledTasksCreated": 0,
+  "actualTrialDays": 1,
+  "installedSkillVisibleInCurrentCatalog": true,
+  "automaticIntentSelectionIndependentlyTested": false,
+  "formal": {
+    "sourceRun": "p3-e4a64e54dcd8b04f34081fcc",
+    "firstRun": "p5-99fd304e0725482085711e340a496ebb",
+    "repeatRun": "p5-fd345ea62ced429d80dbc40bb76725d0",
+    "firstAdded": 2,
+    "repeatAdded": 0,
+    "reused": 2,
+    "preview": "C:\\Users\\14629\\AppData\\Local\\TenderAssistant\\runs\\p5-99fd304e0725482085711e340a496ebb\\preview.md"
+  },
+  "diagnostic": {
+    "sourceRun": "p3-e92eb39de5fbd08e9eab0317",
+    "run": "p5-ca3a6f3d54684d1591990445c3839f88",
+    "added": 3
+  },
+  "sourceData": "Existing P1/P3 snapshots from 2026-09-23; not current website status",
+  "backup": {
+    "path": "C:\\Users\\14629\\AppData\\Local\\TenderAssistant\\backups\\2026-09-23T23-59-44-286Z-aa78b548",
+    "files": 3299,
+    "sessionsIncluded": false,
+    "restoreTarget": "C:\\Users\\14629\\AppData\\Local\\TenderAssistant\\restore-checks\\check-1790207989669",
+    "p2Check": true,
+    "p5Check": true,
+    "ledgerIdentical": true
+  },
+  "tests": {
+    "command": "pnpm test",
+    "passed": 56,
+    "failed": 0,
+    "addedP5Tests": 10
+  },
+  "evidence": {
+    "first": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p5-entry/first.json",
+      "sha256": "8ffcb38aedcfbbb9af7c8a58125a3c2f2153956e674a16b435ef7703b7e4b1b9"
+    },
+    "second": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p5-entry/second.json",
+      "sha256": "b4779b2864e460c7d703ecacde33006ff657a6f1c28537a91dcb34de9d9e4d4a"
+    },
+    "diagnostic": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p5-entry/diagnostic.json",
+      "sha256": "44e96350e41df9a1b6fed46172e963fcf3d9470c5717a7db6e828e181e4c7c18"
+    },
+    "verification": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p5-entry/verification.json",
+      "sha256": "d2a654592037fa5a0af7fd623ce5d4afc5ddf2c32c3dc66f2ea05e1c97d14a99"
+    },
+    "backup": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p5-entry/backup.json",
+      "sha256": "dcd6dd738bb9f6e35cceebdc343e060d80a0397f28fd52e1a6bf3b985929c6e8"
+    },
+    "restore": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p5-entry/restore.json",
+      "sha256": "d45480a5c4aaae295cf428ad0d266a80549a3785ea53008f58268f7c34d2def2"
+    },
+    "restoredNotifications": {
+      "path": "D:/creator/coding_project/tender-assistant/output/playwright/p5-entry/restoredNotifications.json",
+      "sha256": "d2a654592037fa5a0af7fd623ce5d4afc5ddf2c32c3dc66f2ea05e1c97d14a99"
+    }
+  },
+  "remaining": [
+    "真实通知渠道、对象和启用时间未指定",
+    "不少于3个实际运行日的连续试运行未进行",
+    "P1采集缺口、P2真实认证与P3人工验收仍未关闭"
+  ]
+}

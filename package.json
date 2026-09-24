@@ -11,7 +11,8 @@
     "collect:p1": "pnpm run build && node dist/src/cli.js",
     "archive:p2": "pnpm run build && node dist/src/archive/cli.js",
     "analyze:p3": "pnpm run build && node dist/src/analysis/cli.js",
-    "assistant": "pnpm run build && node dist/src/assistant/cli.js"
+    "assistant": "pnpm run build && node dist/src/assistant/cli.js",
+    "notify:p5": "pnpm run build && node dist/src/notify/cli.js"
   },
   "engines": {
     "node": ">=24.13.0"

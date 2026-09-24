@@ -16,13 +16,14 @@ const help = `招投标助手 P4 统一入口
   collect <P1参数>                         例：collect --site ccgp
   archive <P2参数>                         例：archive --verify
   analyze <P3参数>                         例：analyze --prepare --report <绝对路径>
-collect/archive/analyze 使用 --help 查看各自参数；退出码保留原程序定义。
+  notify  <P5参数>                         例：notify --preview 或 notify --status
+collect/archive/analyze/notify 使用 --help 查看各自参数；退出码保留原程序定义。
 默认读取最新正式 P3 快照，零结果或没有快照不切换诊断用途，不自动联网。
 这是已有快照的预览；无实际通知发送、无周期任务、无真实公司匹配。`;
 
 async function doctor() {
   const config = await archiveConfig(project);
-  const required = ['node_modules/typescript/bin/tsc', 'dist/src/cli.js', 'dist/src/archive/cli.js', 'dist/src/analysis/cli.js'];
+  const required = ['node_modules/typescript/bin/tsc', 'dist/src/cli.js', 'dist/src/archive/cli.js', 'dist/src/analysis/cli.js', 'dist/src/notify/cli.js'];
   const missing: string[] = [];
   for (const file of required) { try { await access(resolve(project, file)); } catch { missing.push(file); } }
   const [major = 0, minor = 0] = process.versions.node.split('.').map(Number);
@@ -36,7 +37,7 @@ async function doctor() {
 async function main() {
   const [action, ...args] = process.argv.slice(2);
   if (!action || action === '--help' || action === 'help') { process.stdout.write(help + '\n'); return; }
-  const delegates: Record<string, string> = { collect: 'dist/src/cli.js', archive: 'dist/src/archive/cli.js', analyze: 'dist/src/analysis/cli.js' };
+  const delegates: Record<string, string> = { collect: 'dist/src/cli.js', archive: 'dist/src/archive/cli.js', analyze: 'dist/src/analysis/cli.js', notify: 'dist/src/notify/cli.js' };
   if (Object.hasOwn(delegates, action)) {
     // 在同一进程执行原入口，让 Ctrl+C 和退出码继续由各阶段负责，避免 Windows 强杀子进程。
     const entry = resolve(project, delegates[action]!);

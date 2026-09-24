@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "channel",
+    "recipient",
+    "externalSendingEnabled",
+    "scheduleEnabled",
+    "deadlineHours",
+    "maxAttempts"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "local-preview"
+      ]
+    },
+    "recipient": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "externalSendingEnabled": {
+      "const": false
+    },
+    "scheduleEnabled": {
+      "const": false
+    },
+    "deadlineHours": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "maxAttempts": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

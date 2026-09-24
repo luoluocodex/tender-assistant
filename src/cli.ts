@@ -2,6 +2,8 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './run/config.js';
 import { collect } from './run/collect.js';
+import { archiveConfig } from './archive/config.js';
+import { acquireLock, initializeRoot } from './store/files.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 try {
@@ -26,9 +28,14 @@ try {
         config[key] = value;
       }
     }
-    const result = await collect(config, values.diagnostic ? 'diagnostic' : 'formal', values.site!);
-    console.log(JSON.stringify(result));
-    process.exitCode = result.exitCode;
+    const archive = await archiveConfig(root);
+    await initializeRoot(archive.runtimeRoot);
+    const release = await acquireLock(archive.runtimeRoot);
+    try {
+      const result = await collect(config, values.diagnostic ? 'diagnostic' : 'formal', values.site!);
+      console.log(JSON.stringify(result));
+      process.exitCode = result.exitCode;
+    } finally { await release(); }
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

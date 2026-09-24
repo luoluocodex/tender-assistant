@@ -22,15 +22,18 @@ description: 在本机 tender-assistant 项目中检索政府招投标、查看�
 
 | 用户意图 | 操作 |
 |---|---|
-| 看现有结果、项目摘要、通知预览 | `results`；有 `nextOffset` 时按需翻页，展示总数和已展示条数 |
+| 看现有结果、项目摘要 | `results`；有 `nextOffset` 时按需翻页，展示总数和已展示条数 |
+| 生成通知预览、查看通知状态 | `notify --preview` / `notify --status`；只在本地生成，按事件、版本和接收对象去重 |
 | 按确认条件重新查标 | `collect`；使用阶段返回的报告绝对路径，继续 `analyze --prepare --report <路径>`，再 `results --run <返回ID>` |
 | 下载、归档附件 | 读 P1 报告确认附件序号，再 `archive --report <路径> --pick <公告ID:序号>`；仅选择用户需要的附件 |
 | 继续分析 | `queue` → `packet` 分页读原证据 → 当前会话生成模型 JSON → `analyze --run <ID> --import <文件>` → `results --run <ID>` |
 | 会话失效、验证码、扫码、证书 | 按 [工作流](references/workflow.md) 人工接管；状态与恢复点如实反馈 |
 
-首次执行某阶段前，用 `collect --help`、`archive --help`、`analyze --help` 查看真实参数。将完整参数逐项传入；文件路径始终引用绝对路径，不拼 shell 命令字符串。
+首次执行某阶段前，用 `collect --help`、`archive --help`、`analyze --help`、`notify --help` 查看真实参数。将完整参数逐项传入；文件路径始终引用绝对路径，不拼 shell 命令字符串。
 
 默认：网站开发、广东、含当天最近 7 个自然日、Asia/Shanghai、手动、有头、通知预览。查看历史结果不触发新采集，不将快照称为“当前正在招标”。**诊断必须显式 `--purpose diagnostic`，不得当成正式商机。** 无快照、查询零结果、查询不完整是三个不同状态。
+
+通知 `previewed` 只表示本地文件生成成功；`writing/unknown` 不能当作已发送，也不能盲目重试。先按工作流核对回执，再显式恢复。运行任务成功也可能产生采集失败或待复核的通知，须分别说明。
 
 ## 分析与证据
 

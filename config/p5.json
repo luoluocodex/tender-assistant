@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "channel": "local-preview",
+  "recipient": "local-user",
+  "externalSendingEnabled": false,
+  "scheduleEnabled": false,
+  "deadlineHours": [72, 24],
+  "maxAttempts": 3
+}

@@ -18,7 +18,7 @@ test('P4 任意工作目录可诊断；拒绝误拼参数、非整数分页与�
 });
 
 test('P4 各阶段帮助与原入口一致，原阶段失败退出码不被吞掉', () => {
-  const stages = { collect: 'dist/src/cli.js', archive: 'dist/src/archive/cli.js', analyze: 'dist/src/analysis/cli.js' };
+  const stages = { collect: 'dist/src/cli.js', archive: 'dist/src/archive/cli.js', analyze: 'dist/src/analysis/cli.js', notify: 'dist/src/notify/cli.js' };
   for (const [action, path] of Object.entries(stages)) {
     const original = run(['--help'], resolve(project, path));
     const delegated = run([action, '--help']);
