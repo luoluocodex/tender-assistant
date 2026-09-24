@@ -4,6 +4,8 @@
 
 首轮目标是在广东省公共资源交易平台、中国政府采购网上，检索广东地区最近 7 天的“网站开发”相关公告。使用 Codex 作为主要入口，手动触发，只生成通知预览。
 
+当前查询天数按用户表述指定：例如“最近三天”由技能调用 `collect --days 3`，允许 1～90 个自然日、包含当天；未指定时间范围时才读取配置默认值（当前 7 天）。超过 90 天会明确提示并拒绝，不自动截断、回退或分批绕过。详见[查询天数变更记录](docs/2026-09-24-查询天数参数化.md)。
+
 **P6 技术交接材料与本地复核已完成，用户已于 2026-09-24 确认接收有限范围的阶段性交付；完整业务验收仍未通过。** 已接收范围为本地手动、人工复核、通知预览的原型，现有待完成项保留。优先阅读[最终技术方案](D:/creator/coding_project/tender-assistant/docs/招投标助手最终技术方案.md)、[操作与维护手册](D:/creator/coding_project/tender-assistant/docs/操作与维护手册.md)及[P6 验收记录](D:/creator/coding_project/tender-assistant/docs/P6-验收与交接.md)。下列阶段记录保留其采样日期，不能因进入下一阶段而视为历史缺口已关闭。
 
 当前已实现 P1 两站公开采集原型，并完成首轮真实网站验证，**尚未全部通过 P1 验收**。正式查询在全国站返回零结果；广东站读取 49 页、去重后 488 条候选，第 50 页遇到 HTTP 429，20 份详情中 14 份正文完整。P1 的诊断验证、证据和剩余缺口见执行记录；程序退出成功与 P1 全部验收通过是两个独立结论。
@@ -18,6 +20,7 @@
 
 ## 文档与配置
 
+- [服务交互时序图（离线 HTML）](docs/服务交互时序图.html)：使用者、Codex / WorkBuddy、本地程序、模型服务与政府网站的五类交互，包含人工接管和当前实现边界。
 - [2026-09-24 审查缺陷修复](D:/creator/coding_project/tender-assistant/docs/2026-09-24-审查缺陷修复.md)：6 项修复、合成回归、数据库与通知账本升级，以及旧材料处理边界。
 - [最终技术方案](D:/creator/coding_project/tender-assistant/docs/招投标助手最终技术方案.md)：当前实际架构、目录、提示词与脚本组织、覆盖边界。
 - [操作与维护手册](D:/creator/coding_project/tender-assistant/docs/操作与维护手册.md)：日常操作、人工接管、恢复、备份、更新与卸载。
@@ -35,7 +38,7 @@
 - [P2 运行配置](D:/creator/coding_project/tender-assistant/config/p2.json)：已确认数据目录、附件来源、体积/解析限制和保存策略。
 - [P5 运行配置](D:/creator/coding_project/tender-assistant/config/p5.json)：本地预览对象、72/24 小时临期窗口、重试上限；不启用外发或调度。
 
-`p0-baseline.json` 保留 P0 的历史标识，P1 读取其中已确认的关键词、地区和运行边界。后续阶段未启用的字段不代表已经实现。`sites.json` 是站点能力记录，P1 适配器只支持已实现的两个来源。
+`p0-baseline.json` 保留 P0 的历史标识，P1 读取其中已确认的关键词、地区、默认天数和运行边界；`--days` 只覆盖本次天数，不改写配置。后续阶段未启用的字段不代表已经实现。`sites.json` 是站点能力记录，P1 适配器只支持已实现的两个来源。
 
 ## 环境准备
 
@@ -71,6 +74,7 @@ pnpm run collect:p1
 | 参数 | 含义 |
 |---|---|
 | `--site both` / `ccgp` / `guangdong` | 默认两站；单站运行只代表对应来源验证 |
+| `--days N` | 最近 N 个自然日（含当天），1～90；未指定取 `config/p0-baseline.json` 的 `dateRange.days`；超过 90 明确拒绝，退出 1 |
 | `--max-pages N` | 降低本轮每个查询的页数上限，默认配置为 120 页；上限触发时标部分完成 |
 | `--max-details N` | 降低每站详情样本数，默认 20；按公告类型抽样，不等于读取每份候选详情 |
 | `--diagnostic --keyword 软件` | 明确标记为诊断查询；不更改正式关键词，不计入业务成果 |
@@ -86,7 +90,7 @@ pnpm run collect:p1 --diagnostic --keyword 软件 --site ccgp --max-pages 2 --ma
 
 输出位于 `output/playwright/<运行编号>/`，不提交 Git：
 
-- `report.json`：固定窗口、目的、查询、详情、完整性、错误及 `p1AcceptanceComplete`。
+- `report.json`：本次 `queryDays`、固定 `window`、目的、查询、详情、完整性、错误及 `p1AcceptanceComplete`；旧报告没有 `queryDays` 时继续读取原窗口。
 - 各查询 JSON 和 `progress.json`：已检查页、候选、排除与待复核记录。P1 暂不提供断点续跑命令。
 - 公开页面 TXT、HTML、PNG 和广东站原始响应：保留来源证据。封闭正文单独保存为 `gd-shadow-*.json`，普通页面 HTML 无法包含该正文。
 - `detail-*.json`：正文、哈希、字段原文与来源文件；金额和日期保持原文，不自动做币种、单位或项目资格推断。

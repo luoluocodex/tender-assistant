@@ -1,5 +1,7 @@
 # JSON 字段规范
 
+P1 查询天数契约（2026-09-24）：CLI `collect --days N` 接收 1～90 的整数；未给值时读取 `config/p0-baseline.json.dateRange.days`，默认值同样校验。内部 `RunConfig.days` 为必填 number，`createWindow(now, days)` 不再内置默认天数。新 P1 `report.json.queryDays` 记录本次天数，`window` 保留起止日期、截止时刻和时区；旧报告未添加此字段，P3 仍按原 `window` 消费，不重写历史数据。超限报 `QUERY_DAYS_EXCEEDED`，非正整数报 `INVALID_QUERY_DAYS`，退出码均为 1；缺值或未知参数由 CLI 参数解析器拒绝，均不创建采集任务。
+
 - `analysis-result.schema.json`：单份公告的模型结果，包含版本、相关性、事实/推断/缺口、逐条资格、引用和限制。
 - `analysis-labels.schema.json`：人工或合成评估标签；需要审核者、包 ID、输入哈希和明确标签。
 - `company-fixture.schema.json`：明确标识为合成的公司材料；不是实际公司资料入口。

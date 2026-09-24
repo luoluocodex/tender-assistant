@@ -13,7 +13,7 @@ const help = `招投标助手 P4 统一入口
   results [--purpose formal|diagnostic] [--run p3-id] [--offset 0] [--limit 10]
   queue   [同上]                           列出适合继续分析的待办
   packet  --run p3-id --packet packet-id [--purpose ...] [--offset 0] [--limit 3]
-  collect <P1参数>                         例：collect --site ccgp
+  collect <P1参数>                         例：collect --days 3 --site ccgp；天数 1～90
   archive <P2参数>                         例：archive --verify
   analyze <P3参数>                         例：analyze --prepare --report <绝对路径>
   notify  <P5参数>                         例：notify --preview 或 notify --status

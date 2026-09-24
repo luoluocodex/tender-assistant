@@ -51,6 +51,8 @@ for (const host of ['codex', 'workbuddy']) {
     await assert.rejects(access(failedOutput));
     assert.equal(ps(wrapper, ['-OutputFile', failedOutput, 'collect', '--help']).status, 1);
     const help = ps(wrapper, ['analyze', '--help']); assert.equal(help.status, 0, help.stderr); assert.match(help.stdout, /--prepare/);
+    const collectHelp = ps(wrapper, ['collect', '--help']); assert.equal(collectHelp.status, 0, collectHelp.stderr); assert.match(collectHelp.stdout, /--days/);
+    const overLimit = ps(wrapper, ['collect', '--days', '91']); assert.equal(overLimit.status, 1); assert.match(overLimit.stderr, /QUERY_DAYS_EXCEEDED/);
     const error = ps(wrapper, ['analyze', '--bad-p4-test']); assert.notEqual(error.status, 0);
     const removed = ps(isolatedInstaller, ['-Destination', dest, '-Uninstall']); assert.equal(removed.status, 0, removed.stderr);
     await assert.rejects(access(dest)); assert.equal(await readFile(unrelated, 'utf8'), 'preserve');

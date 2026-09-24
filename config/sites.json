@@ -7,7 +7,7 @@
       "name": "广东省公共资源交易平台",
       "entryUrl": "https://ygp.gdzwfw.gov.cn/",
       "regionPlan": "广东省；首轮不额外限制城市",
-      "queryPlan": "网站开发；最近 7 个自然日；保留公告类型用于分类",
+      "queryPlan": "网站开发；按用户指定的最近 1～90 个自然日，未指定默认 7 天；保留公告类型用于分类",
       "historicalObservationDate": "2026-09-23",
       "historicalObservation": "前期在 Codex 浏览器内未执行登录即可搜索软件及打开样本详情；不等于独立 Playwright 已验证",
       "capabilities": {
@@ -45,7 +45,7 @@
       "entryUrl": "https://www.ccgp.gov.cn/",
       "searchEntryUrl": "https://search.ccgp.gov.cn/",
       "regionPlan": "广东省由广东（44 not 4403）和深圳（4403）两个地区查询合并覆盖；不采集全国结果",
-      "queryPlan": "网站开发；最近 7 个自然日；分别核验标题与全文搜索的支持情况",
+      "queryPlan": "网站开发；按用户指定的最近 1～90 个自然日，未指定默认 7 天；分别核验标题与全文搜索的支持情况",
       "historicalObservationDate": "2026-09-23",
       "historicalObservation": "前期在 Codex 浏览器内未执行登录即可搜索软件并读取样本正文；样本附件指向地方系统",
       "capabilities": {

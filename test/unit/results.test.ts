@@ -6,7 +6,7 @@ import { createWindow } from '../../src/run/window.js';
 import { chooseSamples, siteStopped } from '../../src/run/collect.js';
 
 const item = (id: string, publishedAt: string | null = '2026-09-20 12:00:00'): Listing => ({ site: 'ccgp', id, title: '构造测试公告', url: `https://example.invalid/${id}`, publishedAt, region: '广东', noticeType: '采购', evidence: '合成样本' });
-const result = (): QueryResult => ({ id: 'test', site: 'ccgp', keyword: '测试', region: '广东', mode: 'fulltext', window: createWindow(new Date('2026-09-23T09:00:00Z')), status: 'running', reason: '', totalReported: null, pages: [], listings: [], duplicates: 0, excluded: [], needsReview: [], queryEvidence: {} });
+const result = (): QueryResult => ({ id: 'test', site: 'ccgp', keyword: '测试', region: '广东', mode: 'fulltext', window: createWindow(new Date('2026-09-23T09:00:00Z'), 7), status: 'running', reason: '', totalReported: null, pages: [], listings: [], duplicates: 0, excluded: [], needsReview: [], queryEvidence: {} });
 
 test('仅来源内去重，缺失日期保留，超界结果记录排除证据', () => {
   const query = result();

@@ -28,3 +28,8 @@ test('P4 各阶段帮助与原入口一致，原阶段失败退出码不被吞�
     assert.notEqual(direct.status, 0); assert.equal(rejected.status, direct.status);
   }
 });
+
+test('统一入口保留日期超限提示，不将采集拒绝包装为成功', () => {
+  const result = run(['collect', '--days', '91']);
+  assert.equal(result.status, 1); assert.match(result.stderr, /QUERY_DAYS_EXCEEDED.*90/);
+});

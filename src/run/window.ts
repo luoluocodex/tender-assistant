@@ -1,10 +1,23 @@
 import type { QueryWindow } from '../model.js';
 
 const DAY = 86_400_000;
+export const MAX_QUERY_DAYS = 90;
 
-/** 最近 days 个自然日包含今天；避免操作系统时区影响查询边界。 */
-export function createWindow(now = new Date(), days = 7): QueryWindow {
-  if (!Number.isInteger(days) || days < 1 || days > 366 || !Number.isFinite(now.getTime())) {
+/** 校验本轮查询天数；超限明确拒绝，不截断、不拆分或回退到默认范围。 */
+export function validateQueryDays(value: unknown): number {
+  if (typeof value === 'number' && value > MAX_QUERY_DAYS) {
+    throw new Error(`QUERY_DAYS_EXCEEDED: 查询范围不能超过 ${MAX_QUERY_DAYS} 天；请指定 1～${MAX_QUERY_DAYS} 的整数天数，本次未执行采集。`);
+  }
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    throw new Error(`INVALID_QUERY_DAYS: 查询天数必须为 1～${MAX_QUERY_DAYS} 的整数，本次未执行采集。`);
+  }
+  return value;
+}
+
+/** 最近 days 个自然日包含今天；天数须由调用方提供，按北京时间固定边界。 */
+export function createWindow(now: Date, days: number): QueryWindow {
+  validateQueryDays(days);
+  if (!Number.isFinite(now.getTime())) {
     throw new Error('Invalid date window');
   }
   const endDate = new Date(now.getTime() + 8 * 3_600_000).toISOString().slice(0, 10);
