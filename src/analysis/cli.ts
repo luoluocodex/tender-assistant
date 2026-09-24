@@ -12,7 +12,7 @@ import { evaluate, writeReport } from './report.js';
 import type { AnalysisSnapshot, Notice } from './model.js';
 import { analysisFields } from './fields.js';
 
-const help = `P3 离线过滤、证据包与 Codex 会话分析（不调用付费 API）
+const help = `P3 离线过滤、证据包与 Codex / WorkBuddy 会话分析（程序不调用模型 API）
   --prepare --report <P1报告> [--archive-job <P2任务>] [--company-fixture <合成资料>]
             [--previous <P3任务>] [--track <site:id> 可重复]
   --run <P3任务> --import <模型结果JSON对象或数组>
@@ -75,7 +75,7 @@ async function main(): Promise<void> {
           retainedInputs: packets.filter(p => previous.packets.some(old => old.inputHash === p.inputHash)).map(p => p.packetId) }));
       }
       const counts = await writeReport(config.runtimeRoot, snapshot);
-      process.stdout.write(json({ id, path: runPath(config.runtimeRoot, id), counts, modelInvocation: 'manual-codex-session' })); return;
+      process.stdout.write(json({ id, path: runPath(config.runtimeRoot, id), counts, modelInvocation: 'manual-host-session', supportedProviders: ['codex-session', 'workbuddy-session'] })); return;
     }
     const snapshot = await loadSnapshot(config.runtimeRoot, string(v.run));
     if (v.import) {

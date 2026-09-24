@@ -25,10 +25,10 @@ P1 不支持任意查询条件：更改正式关键词/地域/日期需先按用
 1. `queue --run <ID> --limit 5`。默认仅正文完整、未分析、未被规则排除的当前版本；deferred 不是已排除商机，可能缺正文。诊断任务每次都加 `--purpose diagnostic`。
 2. 对明确的 `packetId` 执行 `packet --run <ID> --packet <ID> --offset 0 --limit 3`。读取第一页的版本、`prompts`、`resultSchema`，然后按 `nextOffset` 读取所有要分析的证据单元。大附件按需限定范围，并在 missing/limitations 写明未阅读部分，不能推断整份文件缺项。
 3. 按快照中的提示词分析；从项目 `schemas/analysis-result.schema.json` 获取完整字段规范。以证据支撑事实，推断单独列出；保留 title/body/attachment/company 的证据类型，不把采购条款当公司证明。每个 citation 必须是对应 evidence.text 的逐字非空子串。
-4. 结果 JSON 对象或数组写入 `runtimeRoot/runs/<P3-ID>/session-output/`，先检查目录；不要存到 Git。复制 `packetId/inputHash/ruleVersion/promptVersion/companyVersion`；`provider="codex-session"`，模型标识未知时 `model="unknown-exact-model"`，不编造版本。缺少公司材料保持 `companyCitations=[]`，资格为“资料不足”。不能填写不存在的 `humanApproved` 等字段。
+4. 结果 JSON 对象或数组写入 `runtimeRoot/runs/<P3-ID>/session-output/`，先检查目录；不要存到 Git。复制 `packetId/inputHash/ruleVersion/promptVersion/companyVersion`；按实际分析宿主填写 `provider`：Codex 用 `codex-session`，WorkBuddy 用 `workbuddy-session`，模型标识未知时 `model="unknown-exact-model"`，不编造版本。旧快照提示词中的固定 `codex-session` 仅代表历史宿主，按当前 schema 和实际宿主填写 provider；其余输入及版本字段原样保留，不修改旧快照。缺少公司材料保持 `companyCitations=[]`，资格为“资料不足”。不能填写不存在的 `humanApproved` 等字段。
 5. `analyze --run <ID> --import <结果绝对路径>`；成功后 `results --run <ID>`。导入校验失败时阅读固定错误码并修正引用/字段；禁止跳过校验或直接改 latest 指针。重复相同结果导入幂等；一批中已成功导入的项目可保留，失败项单独修复。
 
-程序不会启动第二个模型，也不调用付费 API；AI 由当前 Codex 会话实际阅读并判断。真实公司资料入口未实现，不能将真实材料改名 synthetic 绕过边界。自然语言调用与直接脚本调用应产生同一个 P3 任务和同一份校验后清单。
+程序不会启动第二个模型，也不调用模型 API；AI 由当前 Codex 或 WorkBuddy 会话实际阅读并判断，宿主自身的额度和数据处理规则适用。真实公司资料入口未实现，不能将真实材料改名 synthetic 绕过边界。自然语言调用与直接脚本调用应产生同一个 P3 任务和同一份校验后清单。
 
 ## P5 通知预览、核对与恢复
 

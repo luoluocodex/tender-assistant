@@ -11,10 +11,14 @@ description: 在本机 tender-assistant 项目中检索政府招投标、查看�
 
 本技能目录下的 `scripts/tender.ps1` 是统一入口。用当前工具读出本技能绝对路径，再通过 PowerShell 调用；不要假设当前工作目录是项目根目录。安装包的 `project.json` 绑定源码位置；仓库内技能自动定位同仓库。
 
+Codex 与 WorkBuddy 共用本技能。WorkBuddy 可从技能列表、`/tender-assistant` 或自然语言调用。在 Windows WorkBuddy 使用原生 **PowerShell** 工具，不从 Bash 启动 PowerShell（本机宿主会拒绝）。路径用引号包围，保留每个参数边界。安装包绑定已验证的 Node 运行时，不依赖宿主自带 Node 的优先级。
+
 ```powershell
 & '<本技能绝对目录>/scripts/tender.ps1' doctor
 & '<本技能绝对目录>/scripts/tender.ps1' results --limit 5
 ```
+
+Windows WorkBuddy 5.5.6 的 PowerShell 工具可能只返回退出码，不回显 stdout。此时对 `doctor/results/queue/packet` 使用 `-OutputFile '<已存在临时目录>/<本次唯一文件名>.json'`，成功后用 Read 工具读取该文件。输出为 UTF-8，仅允许新文件，拒绝覆盖；失败时不能读取旧文件当作新结果。例如：`& '<技能目录>/scripts/tender.ps1' -OutputFile '<临时目录>/tender-doctor-<唯一标识>.json' doctor`。这只是本地诊断输出，不修改业务归档；写入阶段不支持此选项。避免另加管道导致退出码被吞掉。
 
 `doctor` 的 `project` 和 `runtimeRoot` 是后续文件位置的事实来源。项目缺失、依赖缺失或编译失败时明确反馈；不得偷偷切换到另一个项目。首次使用或环境改变先执行 `doctor`。
 

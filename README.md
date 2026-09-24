@@ -119,7 +119,7 @@ pnpm run archive:p2 --help
 
 P1 命令仍只采集公开列表和正文；P2 命令负责附件与归档，两者分开运行。未知详情模板、正文缺失、查询不完整均保留明确状态。P2 尚未验证真实认证、跨日会话、CA/UKey 和无头模式；扫描件、加密、RAR/其他不支持格式返回明确状态，不自动 OCR 或破解密码。
 
-P1 的限流与模板缺口仍需补齐。P3 已有确定性规则和会话分析闭环，但真实公司匹配、人工标注验收、批量 AI 分析和独立的项目更新采集尚未完成。P4 已封装 Codex 入口；WorkBuddy 入口、外部通知及周期调度未实施。附件能解析不等于内容完整、业务相关或满足投标资格。
+P1 的限流与模板缺口仍需补齐。P3 已有确定性规则和会话分析闭环，但真实公司匹配、人工标注验收、批量 AI 分析和独立的项目更新采集尚未完成。P4 已封装 Codex 入口，2026-09-24 增加 WorkBuddy 技能适配与本机安装，验证范围见下文；外部通知及周期调度未实施。附件能解析不等于内容完整、业务相关或满足投标资格。
 
 ## P3 使用入口
 
@@ -129,7 +129,7 @@ pnpm run analyze:p3 --prepare --report output/playwright/2026-09-23T11-05-57-738
 pnpm run analyze:p3 --run p3-e4a64e54dcd8b04f34081fcc --render
 ```
 
-`--prepare` 生成证据包及 JSON/CSV/Markdown 清单；由当前 Codex 会话按 `prompts/` 进行分析后，以 `--import` 校验导入。程序不会自动调用模型。输出保留相关性、公告阶段、材料完整性、待分析状态和公司资料缺口。`--previous` 与 `--track`、合成公司资料及人工标签评估的完整说明见 P3 执行记录。
+`--prepare` 生成证据包及 JSON/CSV/Markdown 清单；由当前 Codex 或 WorkBuddy 会话按 `prompts/` 进行分析后，以 `--import` 校验导入。程序不会自动调用模型。输出保留相关性、公告阶段、材料完整性、待分析状态和公司资料缺口。`--previous` 与 `--track`、合成公司资料及人工标签评估的完整说明见 P3 执行记录。
 
 退出码 `0` 仅表示当前步骤成功，配置/输入/校验失败为 `1`，不表示 P3 验收通过。业务状态应读取报告中的 `modelStatus`、`coverage`、`eligibility` 和 `p3AcceptanceComplete`。
 
@@ -156,6 +156,23 @@ pnpm run assistant results --purpose diagnostic --limit 3
 ```
 
 `results/queue/packet` 读取已有分析，默认正式用途，不联网或调用模型；技能包装脚本先编译源码。`collect/archive/analyze` 原样转交对应阶段。新采集仍需显式 `collect`，模型分析仍由当前会话读取证据完成；不保证一次指令自动分析全部候选。
+
+## WorkBuddy 使用入口
+
+WorkBuddy 的安装、使用与验证见 [WorkBuddy 安装说明](integrations/workbuddy/README.md) 和 [适配记录](docs/P4-WorkBuddy技能适配.md)。两种宿主共用同一源码技能和统一程序；默认数据根相同。
+
+```powershell
+# 从当前源码根目录安装或更新；卸载加 -Uninstall
+& ./integrations/workbuddy/install-skill.ps1
+# 任意工作目录调用本机 WorkBuddy 技能
+& 'C:/Users/14629/.workbuddy/skills/tender-assistant/scripts/tender.ps1' results --limit 5
+```
+
+在 WorkBuddy 输入：“使用 tender-assistant 技能查看最近一次正式检索结果，说明查询时间、已分析数量和材料缺口。”也可在输入框用 `/tender-assistant` 选择技能。首次先检查 `doctor`；查看历史结果不会重新采集。
+
+本次安装绑定当前工作树 `C:\Users\14629\.codex\worktrees\70b8\tender-assistant`。在删除或迁移工作树前，须从原位置卸载，再从保留的源码位置重新安装；不能只保留技能目录。Codex 已安装副本的原项目绑定不自动迁移。P0 的 `operation.host=Codex` 保留为历史首轮基线。
+
+分析 `provider` 支持 `codex-session` / `workbuddy-session`；`--prepare` 的 `modelInvocation` 改为 `manual-host-session`，新增 `supportedProviders`。旧快照不重写，已导入结果继续兼容；新准备的证据包使用更新后的提示词指纹。
 
 ## P5 使用入口
 

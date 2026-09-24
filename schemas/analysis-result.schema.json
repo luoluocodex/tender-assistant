@@ -44,7 +44,8 @@
     "provider": {
       "type": "string",
       "enum": [
-        "codex-session"
+        "codex-session",
+        "workbuddy-session"
       ]
     },
     "model": {

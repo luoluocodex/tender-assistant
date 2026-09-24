@@ -16,7 +16,7 @@
 | `cli.ts` | 显式参数、全局归档锁、增量输入与错误处理 |
 | `model.ts` | 内部跨模块类型 |
 
-确定性规则不伪装为 AI。`--prepare` 生成完整证据包，当前 Codex 会话按 `prompts/` 分析，再用 `--import` 校验导入；程序不自动启动模型或调用 API。`modelStatus=pending` 明确表示尚未分析。`--company-fixture` 只接受标为 synthetic 的测试资料，真实公司材料入口未启用。
+确定性规则不伪装为 AI。`--prepare` 生成完整证据包，当前 Codex 或 WorkBuddy 会话按 `prompts/` 分析，再用 `--import` 校验导入；程序不自动启动模型或调用 API。`provider` 按实际宿主为 `codex-session` 或 `workbuddy-session`；旧 Codex 结果继续兼容。准备输出的 `modelInvocation=manual-host-session` 和 `supportedProviders` 表示可用宿主，不代表模型已运行。`modelStatus=pending` 明确表示尚未分析。`--company-fixture` 只接受标为 synthetic 的测试资料，真实公司材料入口未启用。
 
 默认资料缺失、正文或附件不全时保留复核；有引用也不能证明语义判断正确。CSV 防止网页标题被解释为公式，Markdown 对材料中的格式字符转义。网页和附件中的指令不能扩大权限。
 
