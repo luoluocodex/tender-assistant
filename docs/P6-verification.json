@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "phase": "P6",
+  "startedAt": "2026-09-24T00:14:31.843Z",
+  "recordedAt": "2026-09-24T00:14:39.053Z",
+  "executionDateAsiaShanghai": "2026-09-24",
+  "scope": "现有实现与本地历史证据复核；文档交接；不重跑政府网站",
+  "baseCommit": "779dbd2903e055c85ceb50d3d5ffdc04b536d33a",
+  "technicalHandoffReady": true,
+  "businessAcceptancePassed": false,
+  "userAcceptance": "accepted-limited-scope",
+  "userAcceptanceRecord": {
+    "confirmedOn": "2026-09-24",
+    "timezone": "Asia/Shanghai",
+    "confirmedBy": "本会话用户（未提供姓名）",
+    "userMessage": "确认",
+    "confirmationContext": "接受本地手动、人工复核、仅通知预览的阶段性交付，并保留现有待完成项",
+    "scope": [
+      "本地手动",
+      "人工复核",
+      "仅通知预览"
+    ],
+    "existingGapsRetained": true,
+    "fullBusinessAcceptanceGranted": false,
+    "additionalOperationalAuthorization": false
+  },
+  "freshGovernmentRequests": 0,
+  "newModelAnalyses": 0,
+  "externalSent": 0,
+  "scheduledTasksCreated": 0,
+  "sourceObservationDate": "2026-09-23",
+  "p5ActualTrialDays": 1,
+  "node": "24.13.0",
+  "validation": {
+    "tests": {
+      "command": "pnpm test",
+      "exitCode": 0,
+      "passed": 56,
+      "failed": 0,
+      "skipped": 0,
+      "observedThisTurn": true,
+      "evidence": "本次终端运行返回；含本地合成页面浏览器测试，未保存完整测试转储"
+    },
+    "typecheck": {
+      "command": "pnpm run check",
+      "exitCode": 0,
+      "observedThisTurn": true
+    },
+    "doctorReady": true,
+    "archive": {
+      "ok": true,
+      "objects": 5,
+      "notices": 3,
+      "errors": []
+    },
+    "notifications": {
+      "ok": true,
+      "deliveries": 5,
+      "runs": 3,
+      "unresolved": 0,
+      "errors": []
+    }
+  },
+  "snapshots": [
+    {
+      "purpose": "formal",
+      "runId": "p3-e4a64e54dcd8b04f34081fcc",
+      "counts": {
+        "candidates": 488,
+        "modelAnalyzed": 4,
+        "pending": 484,
+        "related": 0,
+        "irrelevant": 2,
+        "review": 486
+      },
+      "packetCount": 488,
+      "validatedModelResults": 4,
+      "sourceReport": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\2026-09-23T11-05-57-738Z-formal\\report.json",
+      "sourceSha256": "8a5fb019a8b300e7b07245721ec6bcd3fcf7f9919a0ff43a1e0e3ea158be483c",
+      "snapshotSha256": "1e0d429d4cad4cc8ff5395b82daed77f96419c08e19a467e9c3e9a463246f46c",
+      "exportReportSha256": "a0476d2d324f54bcb65785227e8398151bf712d7d2b9243b6f6c7768a575b243",
+      "p1ReportKeys": [
+        "schemaVersion",
+        "phase",
+        "purpose",
+        "status",
+        "startedAt",
+        "endedAt",
+        "window",
+        "keyword",
+        "region",
+        "headed",
+        "browserVersion",
+        "limits",
+        "notification",
+        "queries",
+        "details",
+        "errors",
+        "acceptance",
+        "p1AcceptanceComplete",
+        "exactPhraseEvidence"
+      ],
+      "artifactsExist": true
+    },
+    {
+      "purpose": "diagnostic",
+      "runId": "p3-e92eb39de5fbd08e9eab0317",
+      "counts": {
+        "candidates": 40,
+        "modelAnalyzed": 3,
+        "pending": 37,
+        "related": 0,
+        "irrelevant": 0,
+        "review": 40
+      },
+      "packetCount": 40,
+      "validatedModelResults": 3,
+      "sourceReport": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\2026-09-23T11-19-09-863Z-diagnostic\\report.json",
+      "sourceSha256": "fbf4d640ba00f371191a4b5459277eab5705db89a5a17c84f50b36fe1bcc3c88",
+      "snapshotSha256": "e86c12ed2bccdffd53651729a8519314581f5e06a62a4c4ebd981fb60f012117",
+      "exportReportSha256": "b16c514f102719770593d67f6fa618da561491cd1e0a73e8826a2a055f1a2cc4",
+      "p1ReportKeys": [
+        "schemaVersion",
+        "phase",
+        "purpose",
+        "status",
+        "startedAt",
+        "endedAt",
+        "window",
+        "keyword",
+        "region",
+        "headed",
+        "browserVersion",
+        "limits",
+        "notification",
+        "queries",
+        "details",
+        "errors",
+        "acceptance",
+        "p1AcceptanceComplete",
+        "exactPhraseEvidence"
+      ],
+      "artifactsExist": true
+    }
+  ],
+  "queueSummary": {
+    "schemaVersion": 1,
+    "action": "queue",
+    "purpose": "formal",
+    "status": "snapshot",
+    "runId": "p3-e4a64e54dcd8b04f34081fcc",
+    "createdAt": "2026-09-23T15:09:34.886Z",
+    "sourceReport": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\2026-09-23T11-05-57-738Z-formal\\report.json",
+    "p3AcceptanceComplete": false,
+    "notification": "preview-only-not-sent",
+    "limitations": [
+      "历史快照，不代表当前可投标项目",
+      "仍需人工复核；真实公司匹配未启用"
+    ],
+    "pending": 484,
+    "ready": 10,
+    "deferred": 474,
+    "policy": "默认只选正文完整、规则未排除的当前版本；附件仍可能不完整，未读取证据不得称已分析",
+    "total": 10,
+    "offset": 0,
+    "nextOffset": 1
+  },
+  "skill": {
+    "installed": "C:/Users/14629/.codex/skills/tender-assistant",
+    "sourceFilesMatch": 4,
+    "managedManifestFilesMatch": 5,
+    "visibleInCurrentCatalog": true,
+    "automaticIntentSelectionIndependentlyTested": false
+  },
+  "backup": {
+    "source": "P5 existing backup and restore target; reverified without creating a new backup",
+    "path": "C:\\Users\\14629\\AppData\\Local\\TenderAssistant\\backups\\2026-09-23T23-59-44-286Z-aa78b548",
+    "restoreTarget": "C:\\Users\\14629\\AppData\\Local\\TenderAssistant\\restore-checks\\check-1790207989669",
+    "manifestSha256": "a2b99f7143a726443e31be6f8b2745676cf0c73e8fac7f164170fe0ff667aee6",
+    "filesChecked": 3299,
+    "allManifestHashesMatch": true,
+    "sessionsIncluded": false,
+    "restoredArchive": {
+      "ok": true,
+      "objects": 5,
+      "notices": 3,
+      "errors": []
+    },
+    "restoredNotifications": {
+      "ok": true,
+      "deliveries": 5,
+      "runs": 3,
+      "unresolved": 0,
+      "errors": []
+    },
+    "currentAndRestoredLedgerMatch": true,
+    "p1EvidenceIncluded": false,
+    "offsiteBackupVerified": false
+  },
+  "evidence": {
+    "doctor": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\doctor.json",
+      "sha256": "aa076de382169f2efd8844f73cf8b31e4da7b4e0d3baf6b2d8c285ab6cdf071b"
+    },
+    "formal": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\formal.json",
+      "sha256": "c4ed9f24fb9d4e4b9c5d13d279f70051d38ea350f611b7a66b1552074003098b"
+    },
+    "diagnostic": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\diagnostic.json",
+      "sha256": "f411d7f4414dfcb68ddde6d9ae644b11375bf8ac06cbc3837006aac5f990f7e9"
+    },
+    "queue": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\queue.json",
+      "sha256": "c8fb670148816da712caa6e77ac67728f1fec2bf16c4d6d91d36d3f7fb7e59c3"
+    },
+    "archive": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\archive.json",
+      "sha256": "2a76e33b13a64af5d0a04f04961f50c5f7ebe2f4cd51d9301eefb7e039ee003f"
+    },
+    "notifications": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\notifications.json",
+      "sha256": "bc780982f5f84162d4ec336da8913f55a9974ebd25c7d54502418c6729483c2e"
+    },
+    "notification-status": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\notification-status.json",
+      "sha256": "ce99f157c922486ca6b5319e0e3f098406f9baea97aadcfe31d6dc6c7fb65530"
+    },
+    "snapshots": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\snapshots.json",
+      "sha256": "29936f6141e90ac2be2db5a78847b532536feea348c8777d33ee2d0d295e6590"
+    },
+    "backup": {
+      "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit\\backup.json",
+      "sha256": "6b51843410f12dfdc68580fec365a1e572c6bed35717425061c052479488ada4"
+    }
+  },
+  "auditScript": {
+    "path": "D:\\creator\\coding_project\\tender-assistant\\output\\playwright\\p6-audit.mjs",
+    "sha256": "72126ad9d7397fa5df4f1c7bd5081196ba6ce3cc442a75e4de0541f5b187cd77"
+  },
+  "remaining": [
+    "广东查询与详情覆盖不足；正式全国站零样本",
+    "真实认证、跨日与无头未验证",
+    "正式484份、诊断37份待分析；未完成人工标注与业务质量验收",
+    "公司真实材料与匹配入口未接入",
+    "外发、调度与连续三个实际运行日未实施",
+    "P1原始证据不在归档备份内；异机恢复和异地备份未验证"
+  ],
+  "documentationReview": {
+    "checkedAt": "2026-09-24T00:23:31.010287+00:00",
+    "changedTrackedOrUntrackedFiles": [
+      "AGENTS.md",
+      "README.md",
+      "docs/P6-verification.json",
+      "docs/P6-验收与交接.md",
+      "docs/招投标信息助手执行方案.md",
+      "docs/招投标助手最终技术方案.md",
+      "docs/操作与维护手册.md"
+    ],
+    "localLinksChecked": 50,
+    "markdownFencesUtf8WhitespaceJson": "passed",
+    "gitDiffCheck": "passed",
+    "evidenceFileHashes": "passed",
+    "commandExamples": "已对照当前CLI；恢复目录通知核验示例实际执行通过，未执行采集/登录/外发模板",
+    "productCodeChanged": false,
+    "testsAdded": false,
+    "testChangeReason": "仅文档交接，复跑现有56项回归，无新增业务逻辑",
+    "documentationSha256": {
+      "AGENTS.md": "e573b41fae375acf4bd9c167c0bbef7827c342c64467460f4934be3ae64df4fb",
+      "README.md": "e0bb6ba0028fa411d89f6e8a42b9e46088badffa8dfa3c368e8df1495e3bc3fc",
+      "docs/P6-验收与交接.md": "7a57aca1f7aadae33bdf1843ab597c660e986599812397a990f234f7c98a5214",
+      "docs/招投标信息助手执行方案.md": "e0fbdbdfb4c0b6961e206c17bd1f02b2b81ad80fcf5cd59c056440f2190f2ca2",
+      "docs/招投标助手最终技术方案.md": "c96b9d580e9be3735da8dfec1e25e198a70bc5741902b19f4a58c4b07f758b46",
+      "docs/操作与维护手册.md": "9a74ecdb6e105976384e682b560ee925c9d2a3fe962b0d61642f496831016bca"
+    },
+    "scope": "P6首次交接文档核验（用户确认前）；确认后的文档指纹与检查见acceptanceDocumentationReview"
+  },
+  "acceptanceDocumentationReview": {
+    "recordedAt": "2026-09-24T00:27:26.293667+00:00",
+    "scope": "仅补记用户有限范围交接确认，不重跑业务验证",
+    "changedFilesThisTurn": [
+      "README.md",
+      "docs/P6-验收与交接.md",
+      "docs/P6-verification.json",
+      "docs/招投标信息助手执行方案.md",
+      "docs/招投标助手最终技术方案.md"
+    ],
+    "localLinksChecked": 50,
+    "markdownJsonWhitespace": "passed",
+    "acceptanceStateConsistency": "passed",
+    "gitDiffCheck": "passed",
+    "businessTestsRerun": false,
+    "reason": "仅签收文档更新，现有56项测试结果保留原核验时间与语境",
+    "documentationSha256": {
+      "AGENTS.md": "e573b41fae375acf4bd9c167c0bbef7827c342c64467460f4934be3ae64df4fb",
+      "README.md": "67d2e9b45463849ed67d43776a374bd7fecbe46c8d4df557d928662acf862173",
+      "docs/P6-验收与交接.md": "bee88260472e02dc1813a965a5b8186e273f9286176d58b6fcc5da93f342dea9",
+      "docs/招投标信息助手执行方案.md": "9e873f315984f5923843b6b20e787afa17063169b6d0817913eaac0e5c77d90d",
+      "docs/招投标助手最终技术方案.md": "151da6f285ba02d8593253f5a342577233da1e54559b3b46407f9de1d19f7af6",
+      "docs/操作与维护手册.md": "9a74ecdb6e105976384e682b560ee925c9d2a3fe962b0d61642f496831016bca"
+    }
+  }
+}
