@@ -36,7 +36,7 @@ export function siteStopped(queries: QueryResult[], site: string): boolean {
 
 /** 有头、串行运行两站；异常保留报告，所有浏览器只由本次任务持有并清理。 */
 export async function collect(config: RunConfig, purpose: 'formal' | 'diagnostic', site: string): Promise<{ directory: string; status: string; exitCode: number }> {
-  const run = new RunContext(config, createWindow(), purpose);
+  const run = new RunContext(config, createWindow(new Date(), config.days), purpose);
   await run.initialize();
   const queries: QueryResult[] = [];
   const details: Detail[] = [];
@@ -117,7 +117,7 @@ export async function collect(config: RunConfig, purpose: 'formal' | 'diagnostic
   }));
   const report = {
     schemaVersion: 1, phase: 'P1', purpose, status, startedAt, endedAt: new Date().toISOString(), window: run.window,
-    keyword: config.keyword, region: '广东省', headed: true, browserVersion,
+    keyword: config.keyword, queryDays: config.days, region: '广东省', headed: true, browserVersion,
     limits: { pages: config.maxPages, detailsPerSite: config.maxDetailsPerSite, minIntervalMs: config.minIntervalMs, maxRunMinutes: config.maxRunMinutes },
     notification: 'preview-only', queries, details, errors, acceptance,
     p1AcceptanceComplete: purpose === 'formal' && site === 'both' && complete && acceptance.every(x => x.searchToDetailCovered && x.paginationCovered),

@@ -1,5 +1,7 @@
 # P3 过滤、去重与 AI 分析执行记录
 
+2026-09-24 宿主扩展：导入支持 `codex-session` 和 `workbuddy-session`，准备输出改为 `modelInvocation=manual-host-session` 并列出 `supportedProviders`。提示词按实际宿主记录来源；旧快照和旧结果不重写，新快照采用更新后的提示词指纹。实现与验证见 [WorkBuddy 适配记录](P4-WorkBuddy技能适配.md)，下文仍为首轮 Codex 分析事实。
+
 后续修复（2026-09-24）：日期字段隔离、附件观察排序和历史快照兼容已补齐，旧结论不自动重写。实现与验证见 [审查缺陷修复](D:/creator/coding_project/tender-assistant/docs/2026-09-24-审查缺陷修复.md)；下文的样本和验收缺口保持原语境。
 
 记录日期：2026-09-23。项目：`D:\creator\coding_project\tender-assistant`。基线提交：`a5176a8`。任务类型：规则分析、字段规范、提示词、离线命令和测试。

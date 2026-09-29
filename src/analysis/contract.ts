@@ -37,7 +37,7 @@ export const citationContract = shape({ evidenceId: text(100), quote: text(2000)
 const claim = shape({ text: text(), citations: array(citationContract, 1, 30) });
 export const resultContract = shape({
   packetId: text(100), inputHash: text(64), ruleVersion: text(100), promptVersion: text(100), companyVersion: text(100),
-  provider: choice('codex-session'), model: text(100),
+  provider: choice('codex-session', 'workbuddy-session'), model: text(100),
   relevance: shape({ decision: choice('related', 'irrelevant', 'review'), reason: text(), citations: array(citationContract, 1, 30) }),
   summary: shape({ facts: array(claim, 1, 30), inferences: array(claim, 0, 30), missing: array(text(), 0, 50) }),
   requirements: array(shape({ id: text(100), category: choice('mandatory', 'scoring', 'general'), scope: text(200),

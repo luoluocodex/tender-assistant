@@ -5,6 +5,7 @@ import { resolve, join } from 'node:path';
 import { selectSnapshot } from '../../src/assistant/catalog.js';
 import { resultView, queueView, packetView, page } from '../../src/assistant/views.js';
 import { importResult, saveSnapshot } from '../../src/analysis/persistence.js';
+import { makePacket, readPrompts, verifyPacket } from '../../src/analysis/packets.js';
 import { notice, packet, snapshot, modelResult } from './analysis-fixtures.js';
 
 async function fixture() {
@@ -56,6 +57,7 @@ test('P4 证据分页完整往返并保留引文与版本，拒绝未知包和�
   while (offset !== null) {
     const result = packetView(value, p.packetId, offset, 1);
     assert.equal(result.inputHash, p.inputHash);
+    assert.deepEqual(result.rules, p.rules);
     assert.deepEqual(result.prompts, offset === 0 ? p.prompts : null);
     collected.push(...result.items); offset = result.nextOffset;
   }
@@ -65,6 +67,29 @@ test('P4 证据分页完整往返并保留引文与版本，拒绝未知包和�
   assert.throws(() => packetView(value, p.packetId, 0, 11), /LIMIT_EXCEEDED/);
   assert.throws(() => page([], -1, 1), /INVALID_PAGE/);
   assert.deepEqual(page([], 0, 1), { total: 0, offset: 0, nextOffset: null, items: [] });
+});
+
+test('证据页使用公告快照业务范围，兼容旧提示词且不改写历史输入指纹', async () => {
+  const legacy = packet(notice('legacy'));
+  const prompts = await readPrompts(process.cwd());
+  const videoRules = { ...legacy.rules, version: 'synthetic-video-rules', keyword: '视频制作', excludeKeywords: ['合成排除项'] };
+  const video = makePacket(notice('video', '合成视频制作采购公告', '交付视频拍摄、剪辑和制作服务'), videoRules, prompts);
+  const videoLegacyPrompt = makePacket(video.notice, videoRules, { ...prompts, relevance: '历史提示词示例：网站开发；输入包的规则字段才是当次业务范围' });
+  const value = snapshot([legacy, video, videoLegacyPrompt]);
+  const original = JSON.stringify(value);
+  for (const p of value.packets) {
+    const first = packetView(value, p.packetId, 0, 1);
+    const next = packetView(value, p.packetId, 1, 1);
+    assert.deepEqual(first.rules, p.rules); assert.deepEqual(next.rules, p.rules);
+    assert.equal(first.ruleVersion, p.rules.version);
+    assert.equal(first.inputHash, p.inputHash); assert.equal(first.promptVersion, p.promptVersion);
+    assert.deepEqual(first.prompts, p.prompts); verifyPacket(p);
+  }
+  assert.equal(packetView(value, video.packetId, 0, 1).rules.keyword, '视频制作');
+  assert.equal(packetView(value, legacy.packetId, 0, 1).rules.keyword, '网站开发');
+  assert.notEqual(video.promptVersion, videoLegacyPrompt.promptVersion);
+  assert.notEqual(video.inputHash, videoLegacyPrompt.inputHash);
+  assert.equal(JSON.stringify(value), original);
 });
 
 test('P4 已持久化模型结果损坏不能被清单或队列静默忽略', async () => {

@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RunConfig } from '../model.js';
+import { validateQueryDays } from './window.js';
 
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('配置必须为 JSON 对象');
@@ -12,8 +13,8 @@ function integer(value: unknown, name: string, min: number, max: number): number
   return value;
 }
 
-/** 读取已确认基线；P1 只接受手动、预览及广东范围，扩大能力必须显式改代码和文档。 */
-export async function loadConfig(root: string): Promise<RunConfig> {
+/** 读取基线默认值和可选 --days；天数为 1～90，错误在创建任务及访问网站前抛出。 */
+export async function loadConfig(root: string, daysOverride?: string): Promise<RunConfig> {
   const read = async (path: string): Promise<Record<string, unknown>> => object(JSON.parse(await readFile(resolve(root, path), 'utf8')));
   const p1 = await read('config/p1.json');
   if (typeof p1.baselineFile !== 'string' || typeof p1.sitesFile !== 'string') throw new Error('配置文件路径缺失');
@@ -24,7 +25,9 @@ export async function loadConfig(root: string): Promise<RunConfig> {
   const operation = object(baseline.operation);
   if (operation.trigger !== 'manual' || operation.externalSendingEnabled !== false || operation.recurringScheduleEnabled !== false) throw new Error('P1 仅支持手动、无外部发送');
   const range = object(baseline.dateRange);
-  if (range.days !== 7 || range.timezone !== 'Asia/Shanghai' || range.mode !== 'calendar-days-including-today') throw new Error('P1 日期范围与已确认基线不一致');
+  if (range.timezone !== 'Asia/Shanghai' || range.mode !== 'calendar-days-including-today') throw new Error('P1 日期口径与已确认基线不一致');
+  const defaultDays = validateQueryDays(range.days);
+  const days = daysOverride === undefined ? defaultDays : validateQueryDays(/^\d+$/.test(daysOverride) ? Number(daysOverride) : NaN);
   if (object(baseline.region).province !== '广东省') throw new Error('P1 仅实现广东省筛选');
   if (p1.headless !== false) throw new Error('P1 尚未验收无头模式');
   if (p1.outputDir !== 'output/playwright') throw new Error('P1 证据位置必须为 output/playwright');
@@ -38,7 +41,7 @@ export async function loadConfig(root: string): Promise<RunConfig> {
     return { id: source.id, entryUrl: source.entryUrl };
   });
   return {
-    keyword: keywords[0], sites, outputDir: resolve(root, p1.outputDir), headless: false,
+    keyword: keywords[0], days, sites, outputDir: resolve(root, p1.outputDir), headless: false,
     maxPages: integer(p1.maxPages, 'maxPages', 1, 200),
     maxDetailsPerSite: integer(p1.maxDetailsPerSite, 'maxDetailsPerSite', 1, 30),
     minIntervalMs: integer(p1.minIntervalMs, 'minIntervalMs', 1000, 60000),

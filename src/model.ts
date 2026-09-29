@@ -66,6 +66,8 @@ export interface QueryResult {
 
 /** 配置值均在启动浏览器前验证。 */
 export interface RunConfig {
+  /** 本轮含当天的自然日数，1～90；默认来自基线配置，可由 --days 覆盖。 */
+  days: number;
   outputDir: string;
   headless: boolean;
   maxPages: number;

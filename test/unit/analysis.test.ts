@@ -66,6 +66,22 @@ test('P3 缺公司资料不判符合；过期、未知有效期、采购材料�
   assert.equal(validateResult(modelResult(incomplete, 'irrelevant'), incomplete).effective.relevance.decision, 'review');
 });
 
+test('WorkBuddy 和历史 Codex 分析可同时导入，保留来源、幂等和引文校验', async () => {
+  const root = await fixtureRoot();
+  const s = snapshot([packet(), packet(notice('workbuddy'))]); await saveSnapshot(root, s);
+  const codex = modelResult(s.packets[0]!);
+  const workbuddy = { ...modelResult(s.packets[1]!), provider: 'workbuddy-session' as const };
+  await importResult(root, s, codex);
+  assert.equal((await importResult(root, s, workbuddy)).reused, false);
+  assert.equal((await importResult(root, s, workbuddy)).reused, true);
+  const results = await readResults(root, await loadSnapshot(root, s.id));
+  assert.equal(results.get(codex.packetId)!.original.provider, 'codex-session');
+  assert.equal(results.get(workbuddy.packetId)!.original.provider, 'workbuddy-session');
+  const forged = structuredClone(workbuddy); forged.relevance.citations[0]!.quote = '伪造引文';
+  await assert.rejects(importResult(root, s, forged), /INVALID_CITATION/);
+  await assert.rejects(importResult(root, s, { ...workbuddy, provider: 'unknown-service' }), /INVALID_ENUM/);
+});
+
 test('P3 双方证据支持合成符合；强制冲突不被评分覆盖；公司变更使旧结果失效', () => {
   const company = { kind: 'synthetic' as const, version: 'fixture-v1', facts: [{ id: 'license', text: '合成公司仅具备测试资质乙级', validUntil: '2027-01-01' }] };
   const p = packet(notice(), company); const r = modelResult(p);

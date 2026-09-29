@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="招投标助手的使用者、Codex / WorkBuddy、本地程序、模型服务及政府网站交互时序。">
+  <title>服务交互时序图 · 招投标助手</title>
+  <style>
+    :root { color-scheme: light; --ink: #172b3a; --muted: #536575; --line: #d9e3e8; --teal: #087b75; --paper: #fff; --amber: #945717; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f5f7f8; color: var(--ink); font: 16px/1.7 "Segoe UI", "Microsoft YaHei", sans-serif; }
+    header, main, footer { max-width: 1560px; margin: auto; padding: 0 40px; }
+    header { padding-top: 45px; padding-bottom: 30px; }
+    .eyebrow { color: var(--teal); font-size: 12px; font-weight: 700; letter-spacing: .15em; }
+    h1 { margin: 8px 0 12px; font-size: clamp(28px, 3vw, 42px); line-height: 1.3; letter-spacing: -.03em; }
+    h2 { margin: 0 0 8px; font-size: 24px; line-height: 1.5; }
+    h3 { margin: 30px 0 12px; font-size: 19px; }
+    p { margin: 8px 0; }
+    a { color: #096b78; text-underline-offset: 3px; }
+    .intro { max-width: 1030px; color: var(--muted); font-size: 17px; }
+    .meta { margin-top: 18px; font-size: 13px; color: var(--muted); }
+    .boundary { margin: 0 0 26px; padding: 16px 20px; border-left: 4px solid var(--teal); background: #e9f3f1; }
+    .boundary p { margin: 0; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 18px; }
+    nav { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+    button { padding: 10px 15px; color: var(--ink); background: #fff; border: 1px solid #b9cbd3; border-radius: 6px; font: inherit; font-size: 14px; cursor: pointer; }
+    button:hover { border-color: var(--teal); background: #edf6f4; }
+    button[aria-pressed="true"] { background: var(--ink); color: white; border-color: var(--ink); }
+    button:focus-visible, summary:focus-visible, .diagram:focus-visible, a:focus-visible { outline: 3px solid #0c8f85; outline-offset: 3px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 22px; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .key { display: inline-flex; align-items: center; gap: 7px; }
+    .stroke { width: 28px; height: 0; border-top: 2px solid #247b76; }
+    .stroke.return { border-top-style: dashed; border-color: #627889; }
+    .stroke.human { border-color: var(--amber); }
+    .scene { background: var(--paper); border: 1px solid var(--line); margin-bottom: 24px; }
+    .scene[hidden] { display: none; }
+    .scene-head { padding: 24px 28px 20px; border-bottom: 1px solid var(--line); }
+    .scene-head .index { color: var(--teal); font-size: 12px; font-weight: 700; letter-spacing: .1em; }
+    .scene-head p { color: var(--muted); max-width: 1100px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 12px; }
+    .diagram { overflow-x: auto; padding: 10px 0; background: #fff; }
+    .diagram svg { display: block; width: 100%; min-width: var(--diagram-min); height: auto; }
+    .scene-note { padding: 16px 28px; border-top: 1px solid var(--line); background: #fafcfc; font-size: 14px; }
+    details { border-top: 1px solid var(--line); padding: 13px 28px; }
+    summary { cursor: pointer; color: #096b78; font-size: 14px; }
+    ol { padding-left: 24px; margin-bottom: 8px; }
+    li { margin: 7px 0; }
+    .text-steps { font-size: 14px; }
+    .text-steps .phase { color: var(--amber); list-style: none; margin: 16px 0 8px -20px; font-weight: 600; }
+    .table-wrap { overflow-x: auto; margin-bottom: 28px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 14px; }
+    th, td { text-align: left; vertical-align: top; padding: 13px 16px; border-bottom: 1px solid var(--line); }
+    th { background: #eaf0f3; font-weight: 600; }
+    td:first-child { min-width: 175px; font-weight: 600; }
+    code { font: .9em/1.6 Consolas, monospace; background: #eef2f4; padding: 2px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+    .note { color: var(--muted); font-size: 14px; }
+    .source-list { columns: 2; padding-left: 20px; font-size: 14px; }
+    .source-list li { break-inside: avoid; padding-right: 20px; }
+    footer { padding-top: 20px; padding-bottom: 36px; color: var(--muted); font-size: 12px; }
+    noscript { display: block; padding: 20px; background: #fff0d9; }
+    @media (max-width: 700px) {
+      header, main, footer { padding-left: 18px; padding-right: 18px; }
+      header { padding-top: 26px; }
+      .scene-head, .scene-note, details { padding-left: 18px; padding-right: 18px; }
+      .source-list { columns: 1; }
+      .controls { align-items: flex-start; }
+      nav { flex-basis: 100%; }
+      button { padding: 8px 10px; }
+    }
+    @media print {
+      @page { size: A3 portrait; margin: 12mm; }
+      body { background: white; font-size: 11pt; }
+      header, main, footer { padding: 0; max-width: none; }
+      .controls, .legend, .hint, details, footer { display: none; }
+      .scene, .scene[hidden] { display: block; break-before: page; border: 0; }
+      .scene-head { padding: 0 0 10px; }
+      .scene-head h2 { font-size: 18pt; }
+      .diagram { overflow: visible; padding: 0; }
+      .diagram svg { min-width: 0; max-height: 320mm; width: 100%; }
+      .scene-note { padding: 10px 0; font-size: 10pt; }
+      .reference { break-before: page; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">TENDER ASSISTANT / INTERACTION SEQUENCES</div>
+    <h1>从一句请求，到一份有据可查的清单</h1>
+    <p class="intro">使用者在 Codex 或 WorkBuddy 中提出任务，宿主通过技能调用本机统一程序。采集与附件模块访问政府网站；AI 分析由当前宿主会话完成；证据、结果和通知预览保存在本机。</p>
+    <p class="meta">服务交互时序图 · 依据 2026-09-24 当前工作树源码与阶段记录编制 · 从上往下阅读 · 单文件离线 HTML</p>
+  </header>
+  <main>
+    <div class="boundary">
+      <p><strong>图中的“服务”也包括本地模块。</strong> 项目没有另行部署后端服务、消息队列或模型 API 网关。下列五个场景需要明确调用；箭头不代表已有自动全流程编排或周期任务。</p>
+    </div>
+    <div class="controls">
+      <nav aria-label="选择时序场景" id="scene-nav"></nav>
+      <button id="show-all" type="button" aria-pressed="false">展开全部</button>
+      <button id="print" type="button">打印 / 存为 PDF</button>
+    </div>
+    <div class="legend" aria-label="图例">
+      <span class="key"><span class="stroke"></span>调用 / 数据写入</span>
+      <span class="key"><span class="stroke return"></span>返回 / 读取结果</span>
+      <span class="key"><span class="stroke human"></span>人工操作</span>
+      <span>横向色带：条件、循环或阶段说明；虚线纵轴：参与方生命线</span>
+    </div>
+    <noscript>时序图由文件内置脚本绘制，请允许 JavaScript 后重新打开。此文件不需要联网；下方职责、约束与源码索引仍可阅读。</noscript>
+    <div id="scenes"></div>
+    <section class="reference" aria-labelledby="actors-title">
+      <h3 id="actors-title">参与方与职责边界</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>参与方</th><th>职责与交互</th><th>运行 / 保存位置</th></tr></thead>
+          <tbody>
+            <tr><td>使用者</td><td>指定任务、选定附件；在需要时处理登录或验证码；复核来源、完整性及业务判断。</td><td>宿主界面；人工接管时使用专用浏览器与终端。</td></tr>
+            <tr><td>Codex / WorkBuddy</td><td>读取 SKILL.md，解释任务并执行工具调用；读取结构化结果；当前会话完成 AI 判断。</td><td>桌面宿主及其配置的模型服务。两者是可选入口，不需要互相调用。</td></tr>
+            <tr><td>技能包装器与统一入口</td><td>tender.ps1 读取项目和 Node 绑定、检查版本、编译源码，再运行 assistant CLI；CLI 将命令交给 P1 / P2 / P3 / P5。</td><td><code>skills/tender-assistant/</code> 是源码；安装副本在用户的 <code>.codex/skills/</code> 或 <code>.workbuddy/skills/</code>。</td></tr>
+            <tr><td>本地业务程序</td><td>P1 采集、P2 归档解析、P3 规则和分析校验、P5 预览。变更数据的命令通过公共归档锁互斥。</td><td>本机 Node.js ≥ 24.13.0；同一套源码，非宿主安装缓存中的独立业务副本。</td></tr>
+            <tr><td>浏览器 / 下载器</td><td>P1 用 Playwright Library 控制有头 Chromium；P2 常规下载用 Node fetch，人工认证时打开独立持久浏览器会话。</td><td>本机；专用会话按来源和账号别名隔离。</td></tr>
+            <tr><td>政府门户与附件来源</td><td>中国政府采购网与广东省公共资源交易平台提供搜索和公告。附件仅访问由真实公告确认、在配置中登记的来源。</td><td><code>www.ccgp.gov.cn</code> / <code>search.ccgp.gov.cn</code>、<code>ygp.gdzwfw.gov.cn</code>；已登记附件来源为 <code>download.ccgp.gov.cn</code>、<code>gdgpo.czt.gd.gov.cn</code>。</td></tr>
+            <tr><td>宿主使用的模型服务</td><td>在宿主会话读取的上下文中做相关性判断、摘要和资格解释。本地程序没有直接请求另一套模型 API。</td><td>具体服务与数据处理规则依宿主配置；图示为逻辑边界，不声称已抓包核实厂商内部协议或部署位置。</td></tr>
+            <tr><td>本地证据与存储</td><td>P1 保存报告和页面证据；P2 保存原文件、解析和 SQLite 索引；P3 保存证据包和分析历史；P5 保存账本、预览及回执。</td><td>P1：项目 <code>output/playwright/</code>；P2 / P3 / P5：<code>C:\Users\14629\AppData\Local\TenderAssistant</code>。两种宿主默认共享此数据根。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>当前约束与已验证范围</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>事项</th><th>当前事实</th></tr></thead>
+          <tbody>
+            <tr><td>查询天数与 90 天上限</td><td>宿主将“最近三天”等用户表述转换为 <code>collect --days 3</code>。允许 1～90 个自然日（含当天）；未指定时读取 <code>config/p0-baseline.json</code> 的默认 7 天。超过 90 天提示并拒绝，不截断、回退或拆分绕过。新报告的 <code>queryDays/window</code> 记录实际范围；本次参数不改写默认配置。</td></tr>
+            <tr><td>采集成功的含义</td><td>列表候选不等于有效商机；详情按上限抽样。零结果、部分完成、正文缺失和附件失败分别记录；不能凭日期排序就无条件宣称某段时间完整。</td></tr>
+            <tr><td>WorkBuddy 验证</td><td>2026-09-24 已验证本机技能识别、doctor 和前三条正式结果读取；这是宿主入口的只读验证，不代表 WorkBuddy 下重新跑过完整采集、登录与分析。</td></tr>
+            <tr><td>登录与 AI 分析</td><td>真实政府账号、跨日会话和 CA / UKey 未验收。未分析的候选保持 pending；真实公司资料入口未启用，资料不足时不给出“符合”结论。</td></tr>
+            <tr><td>通知与调度</td><td>仅 local-preview。外部发送与周期调度关闭；生成文件不等于邮件、企业微信等渠道已送达。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>源码与说明索引</h3>
+      <p class="note">以下链接相对当前 HTML 定位，随项目一起移动仍可使用。此页是代码流程说明；本次制作不触发政府网站访问、业务采集或真实模型分析。</p>
+      <ul class="source-list">
+        <li><a href="../src/assistant/cli.ts">统一入口与只读动作</a> / <a href="../skills/tender-assistant/scripts/tender.ps1">技能包装脚本</a></li>
+        <li><a href="../src/run/collect.ts">P1 采集与停止规则</a> / <a href="../src/run/config.ts">配置硬校验</a> / <a href="../src/run/window.ts">日期窗口</a></li>
+        <li><a href="../src/archive/download.ts">P2 下载器</a> / <a href="../src/archive/cli.ts">归档、认证与恢复入口</a> / <a href="../src/auth/session.ts">专用浏览器会话</a></li>
+        <li><a href="../src/analysis/README.md">P3 证据与分析契约</a> / <a href="../skills/tender-assistant/references/workflow.md">宿主执行工作流</a></li>
+        <li><a href="../src/notify/README.md">P5 通知模块</a> / <a href="../config/p5.json">预览与调度配置</a></li>
+        <li><a href="P4-WorkBuddy技能适配.md">WorkBuddy 独立验证</a> / <a href="招投标助手最终技术方案.md">当前技术方案</a> / <a href="P6-验收与交接.md">历史验收范围</a></li>
+      </ul>
+    </section>
+  </main>
+  <footer>招投标助手 · 2026-09-24 · 内置 SVG 绘制，无 CDN、外部字体或远程脚本；打印时自动包含全部五个场景。</footer>
+  <script>
+    'use strict';
+    // 每个参与方表示逻辑职责；不意味着独立进程或独立部署的网络服务。
+    const actors = {
+      user: ['使用者', '任务与人工复核', 'human'],
+      host: ['Codex / WorkBuddy', '当前宿主会话', 'local'],
+      skill: ['技能包装器', 'tender.ps1', 'local'],
+      app: ['本地业务程序', '统一 CLI → 阶段模块', 'local'],
+      browser: ['Playwright 浏览器', '本机有头 Chromium', 'local'],
+      ccgp: ['中国政府采购网', '门户与搜索站', 'remote'],
+      gd: ['广东公共资源平台', 'ygp.gdzwfw.gov.cn', 'remote'],
+      source: ['登记的附件来源', 'ccgp-download / gdgpo', 'remote'],
+      store: ['本地证据与存储', '文件 / SQLite', 'local'],
+      model: ['宿主的模型服务', '当前会话使用的模型', 'remote'],
+      channel: ['本地预览通道', 'local-preview', 'local']
+    };
+    const call = (from, to, text, kind = 'call') => ({ from, to, text, kind });
+    const band = text => ({ text, kind: 'band' });
+    const scenes = [
+      {
+        id: 'read', tab: '01 查看已有结果', title: '查看已有结果：从宿主到同一份本地快照',
+        description: '从自然语言请求进入技能，读取已保存的分析结果。这里展开公共入口；后续图中的“宿主 → 本地程序”均复用这条调用链。',
+        lanes: ['user', 'host', 'skill', 'app', 'store'],
+        steps: [
+          call('user', 'host', '使用技能，查看最近一次正式结果', 'human'),
+          call('host', 'skill', '读取 SKILL.md 与工作流，调用 doctor / results'),
+          call('skill', 'skill', '读取 project.json；检查 Node；编译源码'),
+          call('skill', 'app', '运行 assistant CLI：results --limit N'),
+          call('app', 'store', '选择指定用途的 P3 快照；校验版本与指纹'),
+          call('store', 'app', '返回清单、统计、证据与待分析状态', 'return'),
+          call('app', 'skill', 'JSON 与退出码', 'return'),
+          call('skill', 'host', '返回 stdout；需要时写 -OutputFile 供 Read 读取', 'return'),
+          call('host', 'user', '解释查询窗口、已分析数量、证据与缺口', 'return'),
+          band('无快照 → 明确返回 no-analysis-run；不将其解释为查询零结果，也不自动转为诊断查询。')
+        ],
+        note: 'results / queue / packet 不触发新采集或本地模型 API。包装脚本仍会编译源码。WorkBuddy 的 -OutputFile 仅支持 doctor / results / queue / packet，且只创建新文件，不覆盖旧输出。'
+      },
+      {
+        id: 'collect', tab: '02 公开网站采集', title: '公开采集：本地浏览器访问两站，保存可追溯证据',
+        description: '图示 --site both 的顺序。全国站与广东站串行；每站先取列表，之后统一进入未被停止站点的详情抽样阶段。',
+        lanes: ['user', 'host', 'app', 'browser', 'ccgp', 'gd', 'store'],
+        steps: [
+          call('user', 'host', '明确要求新一轮公开采集', 'human'),
+          call('host', 'app', '解析用户天数，经技能执行 collect --days N'),
+          call('app', 'app', '校验配置、取得公共锁，固定查询窗口'),
+          band('日期校验：1～90 个自然日（含当天）；未指定才读取配置默认 7 天。超过 90 天明确拒绝并返回，本次不打开浏览器。'),
+          call('app', 'browser', '启动有头 Chromium 与站点适配器'),
+          band('循环 A：全国站按广东（不含深圳）/ 深圳 × 标题 / 全文查询，逐页串行，受页数与时间上限约束。'),
+          call('browser', 'ccgp', '提交关键词、地区、起止日期；翻页'),
+          call('ccgp', 'browser', '返回列表、页信息或访问异常', 'return'),
+          call('browser', 'app', '适配器返回候选、页进度和状态', 'return'),
+          band('循环 B：广东站分词搜索与逐页读取；返回候选尚未经业务相关性判断。'),
+          call('browser', 'gd', '提交查询与日期，读取列表页'),
+          call('gd', 'browser', '返回候选、页信息或访问异常', 'return'),
+          call('browser', 'app', '适配器返回候选、页进度和状态', 'return'),
+          call('app', 'store', '持续保存进度、页面证据和来源'),
+          band('条件：HTTP 403 / 429 或需要人工验证 → 停止该站后续查询及详情；另一站可继续。正常站点进入下列详情抽样。'),
+          call('app', 'browser', '按每站上限选择详情样本'),
+          call('browser', 'ccgp', '读取所选全国站公告正文'),
+          call('ccgp', 'browser', '正文、字段、附件链接与状态', 'return'),
+          call('browser', 'gd', '读取所选广东站公告正文'),
+          call('gd', 'browser', '正文、字段、附件链接与状态', 'return'),
+          call('browser', 'app', '返回详情与完整性；未覆盖项保留缺口', 'return'),
+          call('app', 'store', '保存 P1 report.json、证据与失败范围'),
+          call('app', 'browser', '关闭本次创建的浏览器'),
+          call('app', 'host', '释放公共锁；返回报告路径、状态与退出码', 'return'),
+          call('host', 'user', '说明实际覆盖、零结果或部分完成', 'return')
+        ],
+        note: 'P1 证据位于项目 output/playwright/。详情是抽样，不等于所有列表行都有正文。P1 暂无断点续跑命令；重新 collect 是一次新采集。'
+      },
+      {
+        id: 'archive', tab: '03 附件与人工登录', title: '附件归档：直接下载，必要时由使用者完成认证',
+        description: 'P2 仅处理显式选定的附件。正常下载走本地下载器；只有认证或人工下载分支才使用专用浏览器。',
+        lanes: ['user', 'host', 'app', 'browser', 'source', 'store'],
+        steps: [
+          call('user', 'host', '指定公告与附件序号', 'human'),
+          call('host', 'app', 'archive --report … --pick 公告ID:序号'),
+          call('app', 'store', '读取 P1 证据；创建 P2 队列与任务'),
+          call('app', 'source', 'Node 下载器请求登记的附件 URL'),
+          band('分支 A · 公开附件可访问 → 返回文件后，直接进入图底部的校验、解析与归档。'),
+          call('source', 'app', '文件字节与实际响应类型', 'return'),
+          band('分支 B · 返回登录页 / 401 / 403 → 保存 needs-human；429 单独记 limited，不能当作登录成功或无限重试。'),
+          call('source', 'app', '认证要求或异常状态', 'return'),
+          call('app', 'store', '保存条目状态与恢复所需信息'),
+          call('app', 'host', '返回待人工原因与 P2 任务 ID', 'return'),
+          call('host', 'user', '说明具体来源与所需登录动作', 'return'),
+          band('仅认证分支：用户选择继续后，显式运行 archive --auth；真实账号与 CA / UKey 流程尚未验收。'),
+          call('host', 'app', 'archive --auth 来源 --account 别名'),
+          call('app', 'browser', '打开该来源 / 账号的持久会话'),
+          call('user', 'browser', '人工登录、验证码或手机确认', 'human'),
+          call('browser', 'source', '提交使用者实际完成的认证操作'),
+          call('source', 'browser', '网站响应与会话状态', 'return'),
+          call('user', 'app', '在终端输入 done 保存，或 cancel 取消', 'human'),
+          band('只有 done 才继续本例：会话保留在 private/sessions；保存成功不等于受保护资源已验证可访问。'),
+          call('host', 'app', '显式 archive --resume … --session 来源'),
+          call('app', 'browser', '从指定会话按目标 URL 取 Cookie'),
+          call('browser', 'app', '仅在本地交给下载器的目标 Cookie', 'return'),
+          call('app', 'source', '重新请求选定附件，验证实际权限'),
+          call('source', 'app', '文件或仍然失败的状态', 'return'),
+          band('两条分支汇合 · 仅在取得实际文件后执行；失败保持可恢复状态，不把登录 HTML 当附件。'),
+          call('app', 'app', '核对来源、类型、大小；解析；计算指纹'),
+          call('app', 'store', '保存原文件、解析、SQLite 索引与版本'),
+          call('app', 'host', 'P2 任务、归档结果、完整性或待复核原因', 'return'),
+          call('host', 'user', '提供归档路径与材料缺口', 'return')
+        ],
+        note: '认证后的恢复是显式操作，不是后台自动续跑。Cookie 不进入模型提示词或普通日志。人工浏览器下载 / 本地文件导入另有入口；人工下载材料的来源仍需复核。报名、购买文件、提交响应与签署不在流程内。'
+      },
+      {
+        id: 'analysis', tab: '04 宿主 AI 分析', title: '证据包 → 当前宿主会话 → 校验导入',
+        description: '模型参与的是语义判断；采集、解析、规则、版本与引用校验由本地程序完成。模型服务在此单独展开，表示宿主的逻辑调用关系，不推断其内部网络协议。',
+        lanes: ['user', 'host', 'app', 'store', 'model'],
+        steps: [
+          call('user', 'host', '要求分析指定报告或已有候选', 'human'),
+          call('host', 'app', 'analyze --prepare --report … [--archive-job …]'),
+          call('app', 'store', '读取并校验 P1，以及显式指定的 P2'),
+          call('store', 'app', '原文、附件证据、版本与完整性', 'return'),
+          call('app', 'app', '规则过滤、去重关联、证据分块'),
+          call('app', 'store', '保存 P3 证据包、版本与 pending 清单'),
+          call('app', 'host', 'P3 任务 ID；manual-host-session', 'return'),
+          band('准备证据包 ≠ 已调用模型。以下由当前 Codex 或 WorkBuddy 会话实际读取、判断和生成输出。'),
+          call('host', 'app', 'queue / packet 分页读取待办与证据'),
+          call('app', 'host', '提示词、输出规范、原文证据与版本字段', 'return'),
+          call('host', 'model', '当前会话上下文：所读证据与分析要求'),
+          call('model', 'host', '相关性、摘要、引用与缺失说明', 'return'),
+          call('host', 'store', '将会话输出 JSON 写入 session-output/'),
+          call('host', 'app', 'analyze --run … --import 结果路径'),
+          call('app', 'store', '读取输出及对应证据包'),
+          call('store', 'app', '输出内容、原文与输入版本', 'return'),
+          call('app', 'app', '校验字段、逐字引用、版本与资料缺失'),
+          band('校验失败 → 返回错误，修正后重新导入；只有通过的结果进入历史与正式清单。未处理候选仍为 pending。'),
+          call('app', 'store', '保存通过校验的分析版本与清单'),
+          call('app', 'host', '返回导入结果；results 读取更新后的清单', 'return'),
+          call('host', 'user', '展示证据、结论与限制，交人工复核', 'return')
+        ],
+        note: 'provider 如实为 codex-session / workbuddy-session。模型精确版本未知时不编造。本地程序不另启模型 API；真实公司资料入口未启用，无公司证据时保持“资料不足 / 待复核”。'
+      },
+      {
+        id: 'notify', tab: '05 本地通知预览', title: '从已有分析生成通知预览，记录去重与回执',
+        description: 'P5 读取现有结果，生成本地文件。它不会重新采集网站、运行 AI 分析或启动定时器。',
+        lanes: ['user', 'host', 'app', 'store', 'channel'],
+        steps: [
+          call('user', 'host', '要求生成已有正式结果的通知预览', 'human'),
+          call('host', 'app', 'notify --preview [--run P3-ID]'),
+          call('app', 'store', '读取快照、来源证据与通知账本'),
+          call('store', 'app', '分析结果、历史事件和回执', 'return'),
+          call('app', 'app', '识别事件、临期与缺口；按内容版本去重'),
+          band('已生成且内容相同 → 复用已有预览。新事件执行以下写入；没有相关商机时不能制造相关或临期样例。'),
+          call('app', 'store', '先记录 pending → writing'),
+          call('app', 'channel', '调用本地文件渠道生成预览'),
+          call('channel', 'store', '写 Markdown 预览文件'),
+          call('channel', 'app', '返回本地文件路径与内容回执', 'return'),
+          call('app', 'store', '更新 previewed 与本次运行报告'),
+          band('中断 / 回执未知 → 保留 writing / unknown，先 reconcile 核对；已知失败才显式 resume，不盲目重写。'),
+          call('app', 'host', 'P5 任务 ID、预览路径与状态；externalSent=0', 'return'),
+          call('host', 'user', '展示本地预览，说明源采集与分析缺口', 'return'),
+          band('当前终点就是本地预览：没有邮件 / 企业微信等外发请求，也没有周期调度。')
+        ],
+        note: 'previewed 仅表示本地文件生成成功，不代表网站采集完整、项目可投标或真实通知已送达。账本与 P3 / P5 产物进入归档备份；P1 原始页面证据不自动纳入该备份。'
+      }
+    ];
+
+    const NS = 'http://www.w3.org/2000/svg';
+    function svgElement(tag, attrs = {}, value) {
+      const element = document.createElementNS(NS, tag);
+      for (const [key, val] of Object.entries(attrs)) element.setAttribute(key, String(val));
+      if (value !== undefined) element.textContent = value;
+      return element;
+    }
+    // 以近似字宽折行，英文按较窄字符计算，避免中文标签越过相邻生命线。
+    function wrap(text, width, size = 14) {
+      const lines = []; let line = ''; let used = 0;
+      for (const char of text) {
+        const advance = /[\u0000-\u007f]/.test(char) ? size * .56 : size;
+        if (used + advance > width && line) { lines.push(line); line = ''; used = 0; }
+        line += char; used += advance;
+      }
+      if (line) lines.push(line);
+      return lines;
+    }
+    function svgText(parent, lines, x, y, attrs = {}) {
+      const text = svgElement('text', { x, y, 'text-anchor': 'middle', 'font-size': 14, fill: '#203b4a', ...attrs });
+      lines.forEach((line, index) => text.append(svgElement('tspan', { x, dy: index ? 20 : 0 }, line)));
+      parent.append(text);
+    }
+    function draw(scene) {
+      const gap = 202, margin = 110, width = margin * 2 + (scene.lanes.length - 1) * gap;
+      const position = Object.fromEntries(scene.lanes.map((id, index) => [id, margin + gap * index]));
+      let y = 138;
+      const rows = scene.steps.map(step => {
+        const distance = step.kind === 'band' ? width - 110 : Math.abs(position[step.to] - position[step.from]);
+        const textWidth = step.kind === 'band' ? width - 110 : distance ? distance - 24 : 148;
+        const lines = wrap(step.text, textWidth, step.kind === 'band' ? 13 : 14);
+        const height = step.kind === 'band' ? Math.max(56, 22 + lines.length * 20) : 44 + lines.length * 20;
+        const row = { ...step, y, height, lines, textWidth }; y += height; return row;
+      });
+      const height = y + 40;
+      const svg = svgElement('svg', { viewBox: `0 0 ${width} ${height}`, role: 'img', 'aria-labelledby': `${scene.id}-svg-title ${scene.id}-svg-desc` });
+      svg.style.setProperty('--diagram-min', `${Math.min(width, 1200)}px`);
+      svg.append(svgElement('title', { id: `${scene.id}-svg-title` }, scene.title));
+      svg.append(svgElement('desc', { id: `${scene.id}-svg-desc` }, '从上往下阅读。实线为调用，虚线为返回，棕色为人工操作。完整文字步骤在图下方可展开。'));
+      const defs = svgElement('defs');
+      const colors = { call: '#247b76', return: '#627889', human: '#945717' };
+      for (const [kind, color] of Object.entries(colors)) {
+        const marker = svgElement('marker', { id: `${scene.id}-${kind}`, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' });
+        marker.append(svgElement('path', { d: 'M 1 1 L 9 5 L 1 9', fill: 'none', stroke: color, 'stroke-width': 1.7 }));
+        defs.append(marker);
+      }
+      svg.append(defs);
+      for (const id of scene.lanes) {
+        const x = position[id], [name, sub, type] = actors[id];
+        const fill = type === 'remote' ? '#edf1fb' : type === 'human' ? '#fff4e5' : '#edf6f4';
+        svg.append(svgElement('line', { x1: x, x2: x, y1: 108, y2: height - 20, stroke: '#c8d5db', 'stroke-dasharray': '5 5' }));
+        svg.append(svgElement('rect', { x: x - 91, y: 20, width: 182, height: 86, rx: 7, fill, stroke: '#c9d9df' }));
+        svgText(svg, [type === 'remote' ? '外部服务' : type === 'human' ? '人工参与' : '本机'], x, 40, { 'font-size': 10, fill: '#5e7180' });
+        svgText(svg, [name], x, 65, { 'font-size': 14, 'font-weight': 650 });
+        svgText(svg, [sub], x, 88, { 'font-size': 11, fill: '#536575' });
+      }
+      let number = 0;
+      for (const row of rows) {
+        if (row.kind === 'band') {
+          svg.append(svgElement('rect', { x: 24, y: row.y + 3, width: width - 48, height: row.height - 12, rx: 3, fill: '#fff6e9', stroke: '#ead5b4' }));
+          svgText(svg, row.lines, width / 2, row.y + 23, { 'font-size': 13, fill: '#81501f' });
+          continue;
+        }
+        number++;
+        const x1 = position[row.from], x2 = position[row.to], isSelf = x1 === x2;
+        const center = isSelf ? x1 + 80 : (x1 + x2) / 2;
+        const lineY = row.y + row.lines.length * 20 + 15;
+        const stroke = colors[row.kind];
+        const attrs = { fill: 'none', stroke, 'stroke-width': 1.7, 'marker-end': `url(#${scene.id}-${row.kind})` };
+        if (row.kind === 'return') attrs['stroke-dasharray'] = '6 4';
+        svg.append(svgElement('circle', { cx: 23, cy: lineY - 9, r: 10, fill: '#edf2f4' }));
+        svgText(svg, [String(number)], 23, lineY - 5, { 'font-size': 10, fill: '#617683' });
+        svg.append(svgElement('rect', { x: center - row.textWidth / 2, y: row.y + 3, width: row.textWidth, height: row.lines.length * 20 + 3, fill: '#fff' }));
+        svgText(svg, row.lines, center, row.y + 19, { fill: row.kind === 'human' ? colors.human : '#203b4a' });
+        if (isSelf) svg.append(svgElement('path', { d: `M ${x1} ${lineY} h 150 v 16 h -150`, ...attrs }));
+        else svg.append(svgElement('line', { x1, x2, y1: lineY, y2: lineY, ...attrs }));
+      }
+      return svg;
+    }
+    function build(scene, index) {
+      const section = document.createElement('section');
+      section.className = 'scene'; section.id = scene.id;
+      section.setAttribute('aria-labelledby', `${scene.id}-title`);
+      const heading = document.createElement('div'); heading.className = 'scene-head';
+      const label = document.createElement('div'); label.className = 'index'; label.textContent = `SCENARIO 0${index + 1}`;
+      const title = document.createElement('h2'); title.id = `${scene.id}-title`; title.textContent = scene.title;
+      const description = document.createElement('p'); description.textContent = scene.description;
+      const hint = document.createElement('div'); hint.className = 'hint'; hint.textContent = '窄屏可横向滚动查看全部参与方；下方提供完整文字步骤。';
+      heading.append(label, title, description, hint);
+      const diagram = document.createElement('div'); diagram.className = 'diagram'; diagram.tabIndex = 0;
+      diagram.setAttribute('role', 'region'); diagram.setAttribute('aria-label', `${scene.title}，可横向滚动`); diagram.append(draw(scene));
+      const note = document.createElement('div'); note.className = 'scene-note'; note.textContent = scene.note;
+      const details = document.createElement('details');
+      const summary = document.createElement('summary'); summary.textContent = '展开文字版交互步骤';
+      const list = document.createElement('ol'); list.className = 'text-steps';
+      let number = 0;
+      for (const step of scene.steps) {
+        const item = document.createElement('li');
+        if (step.kind === 'band') { item.className = 'phase'; item.textContent = step.text; }
+        else { item.value = ++number; item.textContent = `${actors[step.from][0]} → ${actors[step.to][0]}：${step.text}`; }
+        list.append(item);
+      }
+      details.append(summary, list); section.append(heading, diagram, note, details);
+      document.getElementById('scenes').append(section);
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = scene.tab;
+      button.id = `nav-${scene.id}`; button.setAttribute('aria-controls', scene.id);
+      button.addEventListener('click', () => { location.hash = scene.id; select(scene.id); });
+      document.getElementById('scene-nav').append(button);
+    }
+    let current = 'read', all = false;
+    function select(id) {
+      current = scenes.some(scene => scene.id === id) ? id : 'read'; all = false; update();
+    }
+    function update() {
+      for (const scene of scenes) {
+        document.getElementById(scene.id).hidden = !all && current !== scene.id;
+        document.getElementById(`nav-${scene.id}`).setAttribute('aria-pressed', String(!all && current === scene.id));
+      }
+      document.getElementById('show-all').setAttribute('aria-pressed', String(all));
+      document.getElementById('show-all').textContent = all ? '返回单个场景' : '展开全部';
+    }
+    scenes.forEach(build);
+    document.getElementById('show-all').addEventListener('click', () => { all = !all; update(); });
+    document.getElementById('print').addEventListener('click', () => window.print());
+    window.addEventListener('hashchange', () => select(location.hash.slice(1)));
+    select(location.hash.slice(1));
+  </script>
+</body>
+</html>

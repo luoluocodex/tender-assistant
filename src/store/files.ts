@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, writeFile, readFile, open, unlink, rename } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, dirname } from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { protectWindowsDirectory } from './windows-access.js';
 
 export function sha256(value: string | Uint8Array): string { return createHash('sha256').update(value).digest('hex'); }
 
@@ -16,10 +16,7 @@ export function inside(root: string, path: string): string {
 export async function initializeRoot(root: string, protect = true): Promise<void> {
   await mkdir(root, { recursive: true });
   if (protect && process.platform === 'win32') {
-    const output = execFileSync('whoami', ['/user', '/fo', 'csv', '/nh'], { encoding: 'utf8', windowsHide: true });
-    const sid = output.match(/S-1-5-(?:\d+-)*\d+/)?.[0];
-    if (!sid) throw new Error('无法确认数据目录权限主体');
-    execFileSync('icacls', [root, '/inheritance:r', '/grant:r', `*${sid}:(OI)(CI)F`, '*S-1-5-18:(OI)(CI)F'], { stdio: 'pipe', windowsHide: true });
+    await protectWindowsDirectory(root);
   }
   for (const name of ['objects', 'parsed', 'notices', 'runs', 'private/sessions', 'backups']) await mkdir(inside(root, name), { recursive: true });
 }

@@ -1,6 +1,6 @@
 ---
 name: tender-assistant
-description: 在本机 tender-assistant 项目中检索政府招投标、查看正式或诊断清单、归档选定附件、根据证据生成项目摘要和资格复核。适用于广东公共资源交易平台、中国政府采购网的“网站开发”业务；复用本地统一命令。用户要求查标、继续分析已有招标结果或恢复附件任务时使用；不用于普通网页开发、通用合同咨询或没有本项目的任意采集。
+description: 在本机 tender-assistant 项目中按已确认关键词检索广东公共资源交易平台、中国政府采购网，查看正式或诊断清单、归档选定附件、根据证据生成摘要和资格复核。用户要求查标、继续分析招标结果或恢复附件任务时使用；复用统一命令，不用于普通网页开发或没有本项目的任意采集。
 ---
 
 # 招投标助手
@@ -11,12 +11,23 @@ description: 在本机 tender-assistant 项目中检索政府招投标、查看�
 
 本技能目录下的 `scripts/tender.ps1` 是统一入口。用当前工具读出本技能绝对路径，再通过 PowerShell 调用；不要假设当前工作目录是项目根目录。安装包的 `project.json` 绑定源码位置；仓库内技能自动定位同仓库。
 
+Codex 与 WorkBuddy 共用本技能。WorkBuddy 可从技能列表、`/tender-assistant` 或自然语言调用。在 Windows WorkBuddy 使用原生 **PowerShell** 工具，不从 Bash 启动 PowerShell（本机宿主会拒绝）。路径用引号包围，保留每个参数边界。安装包绑定已验证的 Node 运行时，不依赖宿主自带 Node 的优先级。
+
 ```powershell
 & '<本技能绝对目录>/scripts/tender.ps1' doctor
 & '<本技能绝对目录>/scripts/tender.ps1' results --limit 5
 ```
 
-`doctor` 的 `project` 和 `runtimeRoot` 是后续文件位置的事实来源。项目缺失、依赖缺失或编译失败时明确反馈；不得偷偷切换到另一个项目。首次使用或环境改变先执行 `doctor`。
+Windows WorkBuddy 的 PowerShell 工具可能只返回退出码，不回显 stdout/stderr。所有动作可在动作之前加 `-LogFile '<本次唯一文件名>.jsonl'`，日志只记录阶段、输出长度、人工接管事件和退出码，不包含原始输出。没有最终 `wrapper/finished` 记录表示命令尚未完成或已中断，不能当成成功。`archive/needs-human` 表示应按工作流交给用户操作。
+
+用 `-OutputFile '<新文件>'` 保存完整 stdout，`-ErrorFile '<新文件>'` 保存完整错误和编译失败信息，再由 Read 读取。文件为 UTF-8，创建时仅授予当前用户和 SYSTEM 访问权限；父目录须已存在，拒绝覆盖。分析材料优先存到对应 `runtimeRoot/runs/<P3-ID>/session-output/`，不存 Git 或普通日志。`doctor/results/queue/packet` 成功时输出 JSON（doctor 退出 2 也保留失败检查）；`collect/archive/analyze/notify` 各退出码都保留 stdout，可能是多行 JSON 或文本，不能整体当成单个 JSON。先读日志的退出码，再读本次结果/错误，不复用旧文件或因工具不回显重跑业务。交互动作仍实时显示提示，保持可输入的终端会话。
+
+`doctor` 的 `project` 和 `runtimeRoot` 是后续文件位置的事实来源。项目缺失、依赖缺失或编译失败时明确反馈；不得偷偷切换到另一个项目。首次采集、环境改变或遇子进程错误时执行 `doctor --runtime-check`：检查当前宿主的子进程、临时目录权限和有头空白页，不访问政府网站。仅 `local-runtime-passed` 表示这些本地检查通过，不能替代站点实测。失败后按检查阶段报告，不因 `spawnSync` 一次失败推断整台机器或全部浏览器不能运行。
+
+```powershell
+& '<本技能绝对目录>/scripts/tender.ps1' -LogFile '<临时目录>/doctor-<唯一标识>.jsonl' -OutputFile '<临时目录>/doctor-<唯一标识>.json' -ErrorFile '<临时目录>/doctor-<唯一标识>.stderr.txt' doctor --runtime-check
+& '<本技能绝对目录>/scripts/tender.ps1' -LogFile '<临时目录>/collect-<唯一标识>.jsonl' -OutputFile '<临时目录>/collect-<唯一标识>.stdout.txt' -ErrorFile '<临时目录>/collect-<唯一标识>.stderr.txt' collect --days 10
+```
 
 ## 意图与操作
 
@@ -24,14 +35,20 @@ description: 在本机 tender-assistant 项目中检索政府招投标、查看�
 |---|---|
 | 看现有结果、项目摘要 | `results`；有 `nextOffset` 时按需翻页，展示总数和已展示条数 |
 | 生成通知预览、查看通知状态 | `notify --preview` / `notify --status`；只在本地生成，按事件、版本和接收对象去重 |
-| 按确认条件重新查标 | `collect`；使用阶段返回的报告绝对路径，继续 `analyze --prepare --report <路径>`，再 `results --run <返回ID>` |
+| 按确认条件重新查标 | `collect --days N`（用户指定的天数）；使用阶段返回的报告绝对路径，继续 `analyze --prepare --report <路径>`，再 `results --run <返回ID>` |
 | 下载、归档附件 | 读 P1 报告确认附件序号，再 `archive --report <路径> --pick <公告ID:序号>`；仅选择用户需要的附件 |
 | 继续分析 | `queue` → `packet` 分页读原证据 → 当前会话生成模型 JSON → `analyze --run <ID> --import <文件>` → `results --run <ID>` |
 | 会话失效、验证码、扫码、证书 | 按 [工作流](references/workflow.md) 人工接管；状态与恢复点如实反馈 |
 
 首次执行某阶段前，用 `collect --help`、`archive --help`、`analyze --help`、`notify --help` 查看真实参数。将完整参数逐项传入；文件路径始终引用绝对路径，不拼 shell 命令字符串。
 
-默认：网站开发、广东、含当天最近 7 个自然日、Asia/Shanghai、手动、有头、通知预览。查看历史结果不触发新采集，不将快照称为“当前正在招标”。**诊断必须显式 `--purpose diagnostic`，不得当成正式商机。** 无快照、查询零结果、查询不完整是三个不同状态。
+查询天数从用户表述提取为 `collect --days N`：例如“最近 3 天 / 最近三天”用 `--days 3`，“今天”用 `--days 1`，“近两周”用 `--days 14`。范围为 **1～90 个自然日，包含当天**，以北京时间和本次开始时刻为边界；不需要改基线配置。用户未给时间范围时才省略 `--days`，使用 `doctor.baseline.dateRange.days`（当前默认 7）。
+
+用户要求超过 90 天时，明确提示“查询范围不能超过 90 天，请指定 1～90 天”，停止本次采集；不得截为 90、回退 7 天或拆成多次请求绕过上限。“三个月”等不能唯一确定天数的表述先澄清，不擅自按 90 天换算。命令再次强制校验，收到拒绝必须如实反馈。首次执行后核对报告 `queryDays` 与 `window`，不能先查 7 天再筛出用户指定的 3 天。
+
+关键词以 `doctor.baseline.business.keywords` 为准，不把历史“网站开发”示例覆盖到用户当前的“视频制作”等已确认条件。其余默认：广东、Asia/Shanghai、手动、有头、通知预览。查看历史结果不触发新采集，不将快照称为“当前正在招标”。**诊断必须显式 `--purpose diagnostic`，不得当成正式商机。** 无快照、查询零结果、查询不完整是三个不同状态。
+
+采集失败时保留原关键词、日期与广东范围。若使用获准的网页查询作补充，也要核对省份，标为补充证据，不能拿全国结果代替广东两站结果。未读到正文、截止时间和资格条件时只称“待核实候选”，不能按公告类型或标题宣布“仍可参与”。同一错误有诊断记录后停止整批重跑，先处理根因；不自动改安全设置或安装另一套运行时。
 
 通知 `previewed` 只表示本地文件生成成功；`writing/unknown` 不能当作已发送，也不能盲目重试。先按工作流核对回执，再显式恢复。运行任务成功也可能产生采集失败或待复核的通知，须分别说明。
 

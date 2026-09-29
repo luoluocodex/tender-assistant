@@ -12,7 +12,7 @@ export function notice(id = '1', title = '合成网站开发采购公告', body 
   return { key: `synthetic:${id}`, version: sha256(id + title + body), purpose: 'diagnostic',
     listing: { site: 'synthetic', id, title, url: `https://example.invalid/${id}`, publishedAt: '2026-09-22 10:00:00', region: '广东', noticeType: '采购公告', evidence: title },
     text: body, completeness: 'complete', fields: extractFields(body), fetchedAt: '2026-09-23T10:00:00Z', attachmentCount: 0, attachments: [],
-    window: createWindow(new Date('2026-09-23T11:00:00Z')), queryComplete: true, queryIds: ['synthetic-query'] };
+    window: createWindow(new Date('2026-09-23T11:00:00Z'), 7), queryComplete: true, queryIds: ['synthetic-query'] };
 }
 export function packet(n = notice(), company: Company | null = null): Packet { return makePacket(n, testRules, testPrompts, company); }
 export function modelResult(p: Packet, decision: 'related' | 'irrelevant' | 'review' = 'related'): ModelResult {

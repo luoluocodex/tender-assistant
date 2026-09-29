@@ -33,9 +33,9 @@ test('脚本提交的下一页可到达末页；翻页 HTTP 429 保留已有结�
       const config: RunConfig = {
         outputDir: resolve('output/playwright/tests'), headless: false, maxPages: 3, maxDetailsPerSite: 1,
         minIntervalMs: 1, navigationTimeoutMs: 3000, actionTimeoutMs: 3000, maxRunMinutes: 1,
-        keyword: '合成分页测试', sites: [{ id: 'ccgp', entryUrl: 'https://www.ccgp.gov.cn/' }],
+        keyword: '合成分页测试', days: 7, sites: [{ id: 'ccgp', entryUrl: 'https://www.ccgp.gov.cn/' }],
       };
-      const run = new RunContext(config, createWindow(new Date('2026-09-23T09:00:00Z')), 'diagnostic');
+      const run = new RunContext(config, createWindow(new Date('2026-09-23T09:00:00Z'), config.days), 'diagnostic');
       await run.initialize();
       const result = await collectCcgp(context, run, 'fulltext', CCGP_REGIONS[0]);
       assert.deepEqual(requests, ['1', '2']);

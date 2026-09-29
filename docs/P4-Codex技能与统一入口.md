@@ -1,5 +1,7 @@
 # P4：Codex 技能与统一入口
 
+2026-09-24 后续增加 WorkBuddy 适配，见 [WorkBuddy 技能适配与验证](P4-WorkBuddy技能适配.md)。下文保留 2026-09-23 首轮 Codex 验证事实；其中 WorkBuddy 未实施等描述属于当时状态。
+
 执行日期：2026-09-23。任务类型：宿主集成、使用文档与测试。项目：`D:\creator\coding_project\tender-assistant`。
 
 ## 1. 结果与验收范围

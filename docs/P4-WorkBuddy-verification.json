@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-24T03:40:45.702Z",
+  "timezone": "Asia/Shanghai",
+  "taskType": "host-integration",
+  "host": {
+    "name": "WorkBuddy",
+    "version": "5.5.6",
+    "sessionId": "d8872802-2146-4ec9-b3fa-534c7b24b90b",
+    "title": "验证招标助手只读调用",
+    "modelLabel": "Deepseek-V4.1-Flash"
+  },
+  "installation": {
+    "destination": "C:/Users/14629/.workbuddy/skills/tender-assistant",
+    "projectRoot": "C:\\Users\\14629\\.codex\\worktrees\\70b8\\tender-assistant",
+    "nodeExecutable": "C:/Program Files/nodejs/node.exe",
+    "managedFiles": [
+      {
+        "sha256": "ede756f922f6e93ee831f1f376d88a3f007bf4b26b55a25a0525da8f293925b2",
+        "path": "SKILL.md"
+      },
+      {
+        "sha256": "6fc9a89371e4ed69d880cc1501d330da06c961ec59b1e7fff1181772849e4c81",
+        "path": "references/workflow.md"
+      },
+      {
+        "sha256": "86b96c34bd10a536fecc76f6c40a22986dc90c7aeb137b09fa2cb5ad6fd04774",
+        "path": "scripts/tender.ps1"
+      },
+      {
+        "sha256": "8c9f55e84f11d5e080522e365dd027ae1bc34d8c940c5f1079a18a4f9981e22f",
+        "path": "project.json"
+      }
+    ],
+    "sourceMatchesInstalled": true,
+    "codexExistingInstallationChanged": false
+  },
+  "verification": {
+    "listedInInstalledSkills": true,
+    "skillToolLoaded": true,
+    "nativePowerShellInvoked": true,
+    "readToolConsumedJson": true,
+    "doctor": {
+      "ready": true,
+      "node": "24.13.0",
+      "nodeSupported": true
+    },
+    "results": {
+      "runId": "p3-e4a64e54dcd8b04f34081fcc",
+      "counts": {
+        "candidates": 488,
+        "modelAnalyzed": 4,
+        "pending": 484,
+        "related": 0,
+        "irrelevant": 2,
+        "review": 486
+      },
+      "shown": 3,
+      "nextOffset": 3
+    },
+    "independentCliJsonEqual": true,
+    "typecheckPassed": true,
+    "tests": {
+      "passed": 69,
+      "failed": 0
+    },
+    "skillFormatValidation": {
+      "source": true,
+      "installed": true
+    },
+    "businessAcceptancePassed": false
+  },
+  "unverified": [
+    "implicit intent selection without naming the skill",
+    "new collection initiated by WorkBuddy",
+    "live authentication and interactive handoff",
+    "real model result import from WorkBuddy",
+    "cross-day operation"
+  ],
+  "evidence": [
+    {
+      "path": "output/playwright/workbuddy-integration/recognized.txt",
+      "sha256": "7e629f246b1df857df9a6b54b4b2ccdacc9c1f245c0ff320b4fe7ec895fdd351"
+    },
+    {
+      "path": "output/playwright/workbuddy-integration/workbuddy-tool-evidence.json",
+      "sha256": "c58cc9b0a2bf74acb1c4009c2ddd5b9aeb3eb5365d851f4e563e692add0bfb7d"
+    },
+    {
+      "path": "output/playwright/workbuddy-integration/workbuddy-doctor.json",
+      "sha256": "1d63304559621419f7f5fc8707894c242c76a8cf6dbd334ce8881b5d06e2b046"
+    },
+    {
+      "path": "output/playwright/workbuddy-integration/workbuddy-results.json",
+      "sha256": "acd54634c810022a88c88c84df58f240ddd4e6528b566c7dca77cb6e4f6f1e56"
+    },
+    {
+      "path": "output/playwright/workbuddy-integration/workbuddy-final-ui.txt",
+      "sha256": "09b32a89426b3052e9738ff06ee976d8baa814c7e4e4ee7f3102cab4a8fd19b8"
+    },
+    {
+      "path": "output/playwright/workbuddy-integration/tests-final.txt",
+      "sha256": "2bb9f9166b8a57a8c2eb02a3d8eeec75878b22ace31572a5bd5084d9a1674778"
+    }
+  ]
+}

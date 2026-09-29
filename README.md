@@ -4,6 +4,8 @@
 
 首轮目标是在广东省公共资源交易平台、中国政府采购网上，检索广东地区最近 7 天的“网站开发”相关公告。使用 Codex 作为主要入口，手动触发，只生成通知预览。
 
+当前查询天数按用户表述指定：例如“最近三天”由技能调用 `collect --days 3`，允许 1～90 个自然日、包含当天；未指定时间范围时才读取配置默认值（当前 7 天）。超过 90 天会明确提示并拒绝，不自动截断、回退或分批绕过。详见[查询天数变更记录](docs/2026-09-24-查询天数参数化.md)。
+
 **P6 技术交接材料与本地复核已完成，用户已于 2026-09-24 确认接收有限范围的阶段性交付；完整业务验收仍未通过。** 已接收范围为本地手动、人工复核、通知预览的原型，现有待完成项保留。优先阅读[最终技术方案](D:/creator/coding_project/tender-assistant/docs/招投标助手最终技术方案.md)、[操作与维护手册](D:/creator/coding_project/tender-assistant/docs/操作与维护手册.md)及[P6 验收记录](D:/creator/coding_project/tender-assistant/docs/P6-验收与交接.md)。下列阶段记录保留其采样日期，不能因进入下一阶段而视为历史缺口已关闭。
 
 当前已实现 P1 两站公开采集原型，并完成首轮真实网站验证，**尚未全部通过 P1 验收**。正式查询在全国站返回零结果；广东站读取 49 页、去重后 488 条候选，第 50 页遇到 HTTP 429，20 份详情中 14 份正文完整。P1 的诊断验证、证据和剩余缺口见执行记录；程序退出成功与 P1 全部验收通过是两个独立结论。
@@ -18,6 +20,7 @@
 
 ## 文档与配置
 
+- [服务交互时序图（离线 HTML）](docs/服务交互时序图.html)：使用者、Codex / WorkBuddy、本地程序、模型服务与政府网站的五类交互，包含人工接管和当前实现边界。
 - [2026-09-24 审查缺陷修复](D:/creator/coding_project/tender-assistant/docs/2026-09-24-审查缺陷修复.md)：6 项修复、合成回归、数据库与通知账本升级，以及旧材料处理边界。
 - [最终技术方案](D:/creator/coding_project/tender-assistant/docs/招投标助手最终技术方案.md)：当前实际架构、目录、提示词与脚本组织、覆盖边界。
 - [操作与维护手册](D:/creator/coding_project/tender-assistant/docs/操作与维护手册.md)：日常操作、人工接管、恢复、备份、更新与卸载。
@@ -35,7 +38,7 @@
 - [P2 运行配置](D:/creator/coding_project/tender-assistant/config/p2.json)：已确认数据目录、附件来源、体积/解析限制和保存策略。
 - [P5 运行配置](D:/creator/coding_project/tender-assistant/config/p5.json)：本地预览对象、72/24 小时临期窗口、重试上限；不启用外发或调度。
 
-`p0-baseline.json` 保留 P0 的历史标识，P1 读取其中已确认的关键词、地区和运行边界。后续阶段未启用的字段不代表已经实现。`sites.json` 是站点能力记录，P1 适配器只支持已实现的两个来源。
+`p0-baseline.json` 保留 P0 的历史标识，P1 读取其中已确认的关键词、地区、默认天数和运行边界；`--days` 只覆盖本次天数，不改写配置。后续阶段未启用的字段不代表已经实现。`sites.json` 是站点能力记录，P1 适配器只支持已实现的两个来源。
 
 ## 环境准备
 
@@ -71,6 +74,7 @@ pnpm run collect:p1
 | 参数 | 含义 |
 |---|---|
 | `--site both` / `ccgp` / `guangdong` | 默认两站；单站运行只代表对应来源验证 |
+| `--days N` | 最近 N 个自然日（含当天），1～90；未指定取 `config/p0-baseline.json` 的 `dateRange.days`；超过 90 明确拒绝，退出 1 |
 | `--max-pages N` | 降低本轮每个查询的页数上限，默认配置为 120 页；上限触发时标部分完成 |
 | `--max-details N` | 降低每站详情样本数，默认 20；按公告类型抽样，不等于读取每份候选详情 |
 | `--diagnostic --keyword 软件` | 明确标记为诊断查询；不更改正式关键词，不计入业务成果 |
@@ -86,7 +90,7 @@ pnpm run collect:p1 --diagnostic --keyword 软件 --site ccgp --max-pages 2 --ma
 
 输出位于 `output/playwright/<运行编号>/`，不提交 Git：
 
-- `report.json`：固定窗口、目的、查询、详情、完整性、错误及 `p1AcceptanceComplete`。
+- `report.json`：本次 `queryDays`、固定 `window`、目的、查询、详情、完整性、错误及 `p1AcceptanceComplete`；旧报告没有 `queryDays` 时继续读取原窗口。
 - 各查询 JSON 和 `progress.json`：已检查页、候选、排除与待复核记录。P1 暂不提供断点续跑命令。
 - 公开页面 TXT、HTML、PNG 和广东站原始响应：保留来源证据。封闭正文单独保存为 `gd-shadow-*.json`，普通页面 HTML 无法包含该正文。
 - `detail-*.json`：正文、哈希、字段原文与来源文件；金额和日期保持原文，不自动做币种、单位或项目资格推断。
@@ -119,7 +123,7 @@ pnpm run archive:p2 --help
 
 P1 命令仍只采集公开列表和正文；P2 命令负责附件与归档，两者分开运行。未知详情模板、正文缺失、查询不完整均保留明确状态。P2 尚未验证真实认证、跨日会话、CA/UKey 和无头模式；扫描件、加密、RAR/其他不支持格式返回明确状态，不自动 OCR 或破解密码。
 
-P1 的限流与模板缺口仍需补齐。P3 已有确定性规则和会话分析闭环，但真实公司匹配、人工标注验收、批量 AI 分析和独立的项目更新采集尚未完成。P4 已封装 Codex 入口；WorkBuddy 入口、外部通知及周期调度未实施。附件能解析不等于内容完整、业务相关或满足投标资格。
+P1 的限流与模板缺口仍需补齐。P3 已有确定性规则和会话分析闭环，但真实公司匹配、人工标注验收、批量 AI 分析和独立的项目更新采集尚未完成。P4 已封装 Codex 入口，2026-09-24 增加 WorkBuddy 技能适配与本机安装，验证范围见下文；外部通知及周期调度未实施。附件能解析不等于内容完整、业务相关或满足投标资格。
 
 ## P3 使用入口
 
@@ -129,7 +133,7 @@ pnpm run analyze:p3 --prepare --report output/playwright/2026-09-23T11-05-57-738
 pnpm run analyze:p3 --run p3-e4a64e54dcd8b04f34081fcc --render
 ```
 
-`--prepare` 生成证据包及 JSON/CSV/Markdown 清单；由当前 Codex 会话按 `prompts/` 进行分析后，以 `--import` 校验导入。程序不会自动调用模型。输出保留相关性、公告阶段、材料完整性、待分析状态和公司资料缺口。`--previous` 与 `--track`、合成公司资料及人工标签评估的完整说明见 P3 执行记录。
+`--prepare` 生成证据包及 JSON/CSV/Markdown 清单；由当前 Codex 或 WorkBuddy 会话按 `prompts/` 进行分析后，以 `--import` 校验导入。程序不会自动调用模型。输出保留相关性、公告阶段、材料完整性、待分析状态和公司资料缺口。`--previous` 与 `--track`、合成公司资料及人工标签评估的完整说明见 P3 执行记录。
 
 退出码 `0` 仅表示当前步骤成功，配置/输入/校验失败为 `1`，不表示 P3 验收通过。业务状态应读取报告中的 `modelStatus`、`coverage`、`eligibility` 和 `p3AcceptanceComplete`。
 
@@ -156,6 +160,29 @@ pnpm run assistant results --purpose diagnostic --limit 3
 ```
 
 `results/queue/packet` 读取已有分析，默认正式用途，不联网或调用模型；技能包装脚本先编译源码。`collect/archive/analyze` 原样转交对应阶段。新采集仍需显式 `collect`，模型分析仍由当前会话读取证据完成；不保证一次指令自动分析全部候选。
+
+## WorkBuddy 使用入口
+
+WorkBuddy 的安装、使用与验证见 [WorkBuddy 安装说明](integrations/workbuddy/README.md) 和 [适配记录](docs/P4-WorkBuddy技能适配.md)。两种宿主共用同一源码技能和统一程序；默认数据根相同。
+
+```powershell
+# 从当前源码根目录安装或更新；卸载加 -Uninstall
+& ./integrations/workbuddy/install-skill.ps1
+# 任意工作目录调用本机 WorkBuddy 技能
+& 'C:/Users/14629/.workbuddy/skills/tender-assistant/scripts/tender.ps1' results --limit 5
+```
+
+在 WorkBuddy 输入：“使用 tender-assistant 技能查看最近一次正式检索结果，说明查询时间、已分析数量和材料缺口。”也可在输入框用 `/tender-assistant` 选择技能。首次采集或环境异常先执行 `doctor --runtime-check`，分别验证子进程、Windows 权限及有头空白页；查看历史结果不会重新采集。
+
+所有包装器动作可用 `-LogFile '<新文件.jsonl>'` 保存阶段、输出长度、安全事件和退出码。完整 stdout 使用 `-OutputFile`，完整 stderr 和编译失败信息使用 `-ErrorFile`，再让 WorkBuddy Read 读取；两种结果文件创建时仅授予当前用户和 SYSTEM 访问，拒绝覆盖。`doctor/results/queue/packet` 成功时保存 JSON（doctor 退出 2 也保存失败检查），阶段动作各退出码都保留 stdout，可能是多行 JSON 或文本。日志不复制原始材料，不能以结果文件存在证明成功。人工接管提示实时显示，登录在可输入的终端完成。详见[审查修复记录](docs/2026-09-28-WorkBuddy审查修复.md)。
+
+新采集关键词以当前配置为准（本工作树保留用户已确认的“视频制作”）；分析时使用 `packet.rules.keyword/region/excludeKeywords` 的快照范围。新提示词不固定业务词；历史提示词和输入哈希不重写，旧业务示例不得覆盖快照规则。
+
+2026-09-24 用户反馈的 WorkBuddy 桌面复验已核实：默认安全配置下四项本地运行检查通过，退出 0，当前安装副本与源码一致。此结果关闭了本次初始化故障的宿主验证缺口；未补跑正式网站采集，不能替代两站业务验收。
+
+本次安装绑定当前工作树 `C:\Users\14629\.codex\worktrees\70b8\tender-assistant`。在删除或迁移工作树前，须从原位置卸载，再从保留的源码位置重新安装；不能只保留技能目录。Codex 已安装副本的原项目绑定不自动迁移。P0 的 `operation.host=Codex` 保留为历史首轮基线。
+
+分析 `provider` 支持 `codex-session` / `workbuddy-session`；`--prepare` 的 `modelInvocation` 改为 `manual-host-session`，新增 `supportedProviders`。旧快照不重写，已导入结果继续兼容；新准备的证据包使用更新后的提示词指纹。
 
 ## P5 使用入口
 
