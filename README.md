@@ -174,7 +174,9 @@ WorkBuddy 的安装、使用与验证见 [WorkBuddy 安装说明](integrations/w
 
 在 WorkBuddy 输入：“使用 tender-assistant 技能查看最近一次正式检索结果，说明查询时间、已分析数量和材料缺口。”也可在输入框用 `/tender-assistant` 选择技能。首次采集或环境异常先执行 `doctor --runtime-check`，分别验证子进程、Windows 权限及有头空白页；查看历史结果不会重新采集。
 
-所有包装器动作可用 `-LogFile '<新文件.jsonl>'` 保存 UTF-8 标准输出、错误和退出码，再让 WorkBuddy Read 读取，避免仅看到退出码后重复采集。`doctor/results/queue/packet` 仍支持 `-OutputFile`；`doctor` 退出 2 时也保存失败检查 JSON，须看字段而非文件是否存在。正式关键词以当前配置为准（本工作树保留用户已确认的“视频制作”），不由历史“网站开发”示例覆盖。详见[WorkBuddy 采集故障修复](docs/2026-09-24-WorkBuddy采集故障修复.md)。
+所有包装器动作可用 `-LogFile '<新文件.jsonl>'` 保存阶段、输出长度、安全事件和退出码。完整 stdout 使用 `-OutputFile`，完整 stderr 和编译失败信息使用 `-ErrorFile`，再让 WorkBuddy Read 读取；两种结果文件创建时仅授予当前用户和 SYSTEM 访问，拒绝覆盖。`doctor/results/queue/packet` 成功时保存 JSON（doctor 退出 2 也保存失败检查），阶段动作各退出码都保留 stdout，可能是多行 JSON 或文本。日志不复制原始材料，不能以结果文件存在证明成功。人工接管提示实时显示，登录在可输入的终端完成。详见[审查修复记录](docs/2026-09-28-WorkBuddy审查修复.md)。
+
+新采集关键词以当前配置为准（本工作树保留用户已确认的“视频制作”）；分析时使用 `packet.rules.keyword/region/excludeKeywords` 的快照范围。新提示词不固定业务词；历史提示词和输入哈希不重写，旧业务示例不得覆盖快照规则。
 
 2026-09-24 用户反馈的 WorkBuddy 桌面复验已核实：默认安全配置下四项本地运行检查通过，退出 0，当前安装副本与源码一致。此结果关闭了本次初始化故障的宿主验证缺口；未补跑正式网站采集，不能替代两站业务验收。
 

@@ -60,7 +60,7 @@ export function packetView(snapshot: AnalysisSnapshot, packetId: string, offset:
   if (!packet) throw new Error('UNKNOWN_PACKET');
   if (limit > 10) throw new Error('PACKET_PAGE_LIMIT_EXCEEDED: 最大 10 个证据单元');
   const selected = page(packet.evidence, offset, limit);
-  return { packetId, inputHash: packet.inputHash, ruleVersion: packet.rules.version, promptVersion: packet.promptVersion,
+  return { packetId, inputHash: packet.inputHash, rules: packet.rules, ruleVersion: packet.rules.version, promptVersion: packet.promptVersion,
     companyVersion: packet.companyVersion, title: packet.notice.listing.title, sourceUrl: packet.notice.listing.url,
     window: packet.notice.window, queryComplete: packet.notice.queryComplete, coverage: packet.coverage,
     currentObservedVersion: currentPackets(snapshot).some(p => p.packetId === packetId),

@@ -2,7 +2,7 @@
 
 下列命令都通过本技能 `scripts/tender.ps1`，或在项目根执行 `pnpm run assistant`。读取文件先用 `doctor` 获取项目和数据根目录。结果是已有快照；`createdAt`、公告日期和查询窗口都必须保留。
 
-WorkBuddy 调用使用 `-LogFile <新文件.jsonl>` 保留每一阶段的标准输出、错误和退出码；用 Read 读取，不能因为工具没回显就重跑。首次采集或遇子进程错误，先 `doctor --runtime-check`，分别核对 `runtime.subprocess/windowsIdentity/directoryPermissions/browser`。此检查只使用本地临时空目录和空白页，不能证明网站可访问。目录权限失败时程序停止，不跳过 ACL 检查。
+WorkBuddy 调用使用 `-LogFile <新文件.jsonl>` 查看阶段、长度、人工接管事件和退出码；完整输出用 `-OutputFile <新文件>`，错误用 `-ErrorFile <新文件>` 保存到受限文件后 Read 读取。日志不再含 stdout/stderr 原文，不能因为工具没回显就重跑。首次采集或遇子进程错误，先 `doctor --runtime-check`，分别核对 `runtime.subprocess/windowsIdentity/directoryPermissions/browser`。此检查只使用本地临时空目录和空白页，不能证明网站可访问。目录权限失败时程序停止，不跳过 ACL 检查。
 
 ## 采集和归档
 
@@ -25,8 +25,8 @@ WorkBuddy 调用使用 `-LogFile <新文件.jsonl>` 保留每一阶段的标准�
 ## 当前会话进行 AI 分析
 
 1. `queue --run <ID> --limit 5`。默认仅正文完整、未分析、未被规则排除的当前版本；deferred 不是已排除商机，可能缺正文。诊断任务每次都加 `--purpose diagnostic`。
-2. 对明确的 `packetId` 执行 `packet --run <ID> --packet <ID> --offset 0 --limit 3`。读取第一页的版本、`prompts`、`resultSchema`，然后按 `nextOffset` 读取所有要分析的证据单元。大附件按需限定范围，并在 missing/limitations 写明未阅读部分，不能推断整份文件缺项。
-3. 按快照中的提示词分析；从项目 `schemas/analysis-result.schema.json` 获取完整字段规范。以证据支撑事实，推断单独列出；保留 title/body/attachment/company 的证据类型，不把采购条款当公司证明。每个 citation 必须是对应 evidence.text 的逐字非空子串。
+2. 对明确的 `packetId` 执行 `packet --run <ID> --packet <ID> --offset 0 --limit 3`。读取第一页的版本、`rules`、`prompts`、`resultSchema`，然后按 `nextOffset` 读取所有要分析的证据单元。大附件按需限定范围，并在 missing/limitations 写明未阅读部分，不能推断整份文件缺项。
+3. 按快照中的提示词分析，业务范围以该包 `rules.keyword/region/excludeKeywords` 为准；旧提示词中的固定“网站开发”仅为历史业务示例，不能覆盖包内规则，也不能使用当前 doctor 的关键词覆盖历史快照。缺少 rules 时先补读输入包。保持旧快照和输入哈希不变。从项目 `schemas/analysis-result.schema.json` 获取完整字段规范。以证据支撑事实，推断单独列出；保留 title/body/attachment/company 的证据类型，不把采购条款当公司证明。每个 citation 必须是对应 evidence.text 的逐字非空子串。
 4. 结果 JSON 对象或数组写入 `runtimeRoot/runs/<P3-ID>/session-output/`，先检查目录；不要存到 Git。复制 `packetId/inputHash/ruleVersion/promptVersion/companyVersion`；按实际分析宿主填写 `provider`：Codex 用 `codex-session`，WorkBuddy 用 `workbuddy-session`，模型标识未知时 `model="unknown-exact-model"`，不编造版本。旧快照提示词中的固定 `codex-session` 仅代表历史宿主，按当前 schema 和实际宿主填写 provider；其余输入及版本字段原样保留，不修改旧快照。缺少公司材料保持 `companyCitations=[]`，资格为“资料不足”。不能填写不存在的 `humanApproved` 等字段。
 5. `analyze --run <ID> --import <结果绝对路径>`；成功后 `results --run <ID>`。导入校验失败时阅读固定错误码并修正引用/字段；禁止跳过校验或直接改 latest 指针。重复相同结果导入幂等；一批中已成功导入的项目可保留，失败项单独修复。
 

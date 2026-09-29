@@ -31,13 +31,13 @@
 
 首次检查 `doctor`，再执行所需动作。使用 WorkBuddy 原生 PowerShell 工具：`& '<安装目录>/scripts/tender.ps1' results --limit 5`，不需要手动切到项目目录。本机宿主拒绝从 Bash 启动 PowerShell，应遵循此工具边界。
 
-本机 PowerShell 工具可能只返回退出码。所有动作可用 `-LogFile '<已存在临时目录>/<本次唯一文件名>.jsonl'` 保存 UTF-8 的 stdout、stderr 和退出码，再由 Read 读取；参数放在动作之前。无需额外管道或重定向；缺少最终 `wrapper/finished` 记录说明尚未完成或中断。已有日志会在动作开始前拒绝覆盖，避免误重跑业务。
+本机 PowerShell 工具可能只返回退出码。所有动作可用 `-LogFile '<本次唯一文件名>.jsonl'` 保存阶段、输出长度、安全事件和退出码，再由 Read 读取；参数放在动作之前。缺少最终 `wrapper/finished` 记录说明尚未完成或中断。日志不含原始材料，已有文件会在动作开始前拒绝覆盖。人工接管事件 `archive/needs-human` 实时写入，登录仍需保持可输入的终端。
 
-`doctor/results/queue/packet` 另可使用 `-OutputFile '<本次唯一文件名>.json'`。退出 0 才生成结果文件，例外为 `doctor` 退出 2 仍保存失败检查 JSON；不要把此文件存在视为成功。首次采集或环境异常使用：
+所有动作另可使用 `-OutputFile '<新文件>'` 保存 stdout、`-ErrorFile '<新文件>'` 保存 stderr 和编译失败信息；结果文件创建时仅允许当前用户和 SYSTEM 访问，父目录须存在。`doctor/results/queue/packet` 退出 0 保存 JSON，doctor 退出 2 也保留失败检查；其他阶段各退出码均保存 stdout，可能为多行 JSON 或文本。分析材料优先放在对应 P3 任务的 session-output 目录，不能把结果文件存在视为成功。首次采集或环境异常使用：
 
 ```powershell
-& '<安装目录>/scripts/tender.ps1' -LogFile '<临时目录>/doctor-<唯一标识>.jsonl' -OutputFile '<临时目录>/doctor-<唯一标识>.json' doctor --runtime-check
-& '<安装目录>/scripts/tender.ps1' -LogFile '<临时目录>/collect-<唯一标识>.jsonl' collect --days 10
+& '<安装目录>/scripts/tender.ps1' -LogFile '<临时目录>/doctor-<唯一标识>.jsonl' -OutputFile '<临时目录>/doctor-<唯一标识>.json' -ErrorFile '<临时目录>/doctor-<唯一标识>.stderr.txt' doctor --runtime-check
+& '<安装目录>/scripts/tender.ps1' -LogFile '<临时目录>/collect-<唯一标识>.jsonl' -OutputFile '<临时目录>/collect-<唯一标识>.stdout.txt' -ErrorFile '<临时目录>/collect-<唯一标识>.stderr.txt' collect --days 10
 ```
 
 `doctor` 默认检查文件、版本、异步子进程和 Windows 用户识别；`--runtime-check` 再在独立空目录应用权限，并启动有头浏览器空白页后关闭。`collectionReadiness=local-runtime-passed` 仅代表本地运行条件通过，不含政府网站访问或登录。临时诊断文件不替代业务归档。2026-09-24 分享会话故障及当前 5.6.2 版本验证边界见[故障修复记录](../../docs/2026-09-24-WorkBuddy采集故障修复.md)。

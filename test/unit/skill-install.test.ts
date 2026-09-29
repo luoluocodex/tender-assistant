@@ -53,7 +53,8 @@ for (const host of ['codex', 'workbuddy']) {
     const failedOutput = join(parent, 'failed.json');
     assert.equal(ps(wrapper, ['-OutputFile', failedOutput, 'results', '--bad-option']).status, 1);
     await assert.rejects(access(failedOutput));
-    assert.equal(ps(wrapper, ['-OutputFile', failedOutput, 'collect', '--help']).status, 1);
+    assert.equal(ps(wrapper, ['-OutputFile', failedOutput, 'collect', '--help']).status, 0);
+    assert.match(await readFile(failedOutput, 'utf8'), /--days/);
     const help = ps(wrapper, ['analyze', '--help']); assert.equal(help.status, 0, help.stderr); assert.match(help.stdout, /--prepare/);
     const collectHelp = ps(wrapper, ['collect', '--help']); assert.equal(collectHelp.status, 0, collectHelp.stderr); assert.match(collectHelp.stdout, /--days/);
     const overLimit = ps(wrapper, ['collect', '--days', '91']); assert.equal(overLimit.status, 1); assert.match(overLimit.stderr, /QUERY_DAYS_EXCEEDED/);

@@ -1,83 +1,28 @@
-param(
+﻿param(
     [Parameter(Position = 0)][string]$Action = 'doctor',
     [string]$OutputFile,
+    [string]$ErrorFile,
     [string]$LogFile,
     [Parameter(ValueFromRemainingArguments = $true)][string[]]$ForwardArgs
 )
 $ErrorActionPreference = 'Stop'
 $utf8 = New-Object System.Text.UTF8Encoding($false)
+[Console]::OutputEncoding = $utf8
 $logWriter = $null
+$outputWriter = $null
+$errorWriter = $null
 $resultCode = 1
-
-# Windows argv quoting, including embedded quotes and trailing backslashes.
-function Quote-NativeArgument([string]$Value) {
-    return '"' + [regex]::Replace([regex]::Replace($Value, '(\\*)"', '$1$1\"'), '(\\+)$', '$1$1') + '"'
-}
-function Write-RunLog([string]$Stage, [string]$Stream, [string]$Text, $Code = $null) {
-    if ($script:logWriter) {
-        $record = @{ timestamp = [DateTime]::UtcNow.ToString('o'); stage = $Stage; stream = $Stream; text = $Text }
-        if ($null -ne $Code) { $record.exitCode = $Code }
-        $script:logWriter.WriteLine(($record | ConvertTo-Json -Compress))
-        $script:logWriter.Flush()
-    }
-}
-function Invoke-Node([string[]]$NativeArgs, [string]$Stage) {
-    $info = New-Object System.Diagnostics.ProcessStartInfo
-    $info.FileName = $script:node
-    $info.Arguments = (($NativeArgs | ForEach-Object { Quote-NativeArgument $_ }) -join ' ')
-    $info.UseShellExecute = $false
-    $info.CreateNoWindow = $true
-    $info.RedirectStandardOutput = $true
-    $info.RedirectStandardError = $true
-    $info.StandardOutputEncoding = $script:utf8
-    $info.StandardErrorEncoding = $script:utf8
-    $process = New-Object System.Diagnostics.Process
-    $process.StartInfo = $info
-    $started = $false
-    try {
-        Write-RunLog $Stage 'status' 'started'
-        if (-not $process.Start()) { throw 'Node process did not start.' }
-        $started = $true
-        # Drain both streams concurrently; native stderr warnings are not PowerShell exceptions.
-        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
-        $stderrTask = $process.StandardError.ReadToEndAsync()
-        # Short waits let PowerShell cancellation reach the finally block.
-        while (-not $process.WaitForExit(200)) { }
-        $stdout = $stdoutTask.GetAwaiter().GetResult()
-        $stderr = $stderrTask.GetAwaiter().GetResult()
-        Write-RunLog $Stage 'stdout' $stdout
-        Write-RunLog $Stage 'stderr' $stderr
-        Write-RunLog $Stage 'status' 'finished' $process.ExitCode
-        return @{ Stdout = $stdout; Stderr = $stderr; ExitCode = $process.ExitCode }
-    } finally {
-        # Only terminate the process tree started by this invocation, if interrupted.
-        if ($started -and -not $process.HasExited) {
-            $cleanupInfo = New-Object System.Diagnostics.ProcessStartInfo
-            $cleanupInfo.FileName = Join-Path $env:SystemRoot 'System32/taskkill.exe'
-            $cleanupInfo.Arguments = "/PID $($process.Id) /T /F"
-            $cleanupInfo.UseShellExecute = $false
-            $cleanupInfo.CreateNoWindow = $true
-            $cleanupInfo.RedirectStandardOutput = $true
-            $cleanupInfo.RedirectStandardError = $true
-            $cleanup = [Diagnostics.Process]::Start($cleanupInfo)
-            try { if (-not $cleanup.WaitForExit(10000)) { $cleanup.Kill() } }
-            finally { $cleanup.Dispose() }
-        }
-        $process.Dispose()
-    }
-}
-function Publish-ProcessResult($Result, [bool]$IncludeOutput = $true) {
-    if ($IncludeOutput -and $Result.Stdout) { Write-Output $Result.Stdout.TrimEnd("`r", "`n") }
-    if ($Result.Stderr) { Write-Error -Message $Result.Stderr.TrimEnd("`r", "`n") -ErrorAction Continue }
-}
+$outputSaved = $false
+. (Join-Path $PSScriptRoot 'process.ps1')
 try {
     if ($LogFile) {
-        # Reserve before any action, never overwrite an existing diagnostic record.
-        $logPath = [IO.Path]::GetFullPath($LogFile)
-        $stream = [IO.File]::Open($logPath, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::Read)
+        $stream = [IO.File]::Open([IO.Path]::GetFullPath($LogFile), [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::Read)
         $logWriter = New-Object IO.StreamWriter($stream, $utf8)
         Write-RunLog 'wrapper' 'status' 'started'
     }
+    # 所有输出路径先独占预留；ACL 失败、路径重复或已有文件均在业务动作前拒绝。
+    if ($ErrorFile) { $errorWriter = New-ProtectedWriter $ErrorFile }
+    if ($OutputFile) { $outputWriter = New-ProtectedWriter $OutputFile }
     $binding = $null
     $skillRoot = Split-Path -Parent $PSScriptRoot
     $bindingPath = Join-Path $skillRoot 'project.json'
@@ -93,33 +38,40 @@ try {
     $compiler = Join-Path $projectRoot 'node_modules/typescript/bin/tsc'
     if (-not (Test-Path -LiteralPath $compiler)) { throw 'Dependencies missing. Run pnpm install --frozen-lockfile --ignore-scripts in the project.' }
     $node = if ($binding -and $binding.nodeExecutable) { $binding.nodeExecutable } else { @(Get-Command node -CommandType Application -ErrorAction Stop)[0].Source }
-    if ($OutputFile -and $Action -notin @('doctor', 'results', 'queue', 'packet')) { throw '-OutputFile is only supported for JSON actions: doctor/results/queue/packet.' }
-    if ($OutputFile -and (Test-Path -LiteralPath $OutputFile)) { throw 'Output file already exists; use a unique new path.' }
+    $actions = @('doctor', 'results', 'queue', 'packet', 'collect', 'archive', 'analyze', 'notify', 'help', '--help')
+    if ($Action -notin $actions) { throw 'Unknown action; use help.' }
     $versionResult = Invoke-Node @('--version') 'version'
     $version = $null
     if ($versionResult.ExitCode -ne 0 -or -not [Version]::TryParse(($versionResult.Stdout.Trim() -replace '^v', ''), [ref]$version) -or $version -lt [Version]'24.13.0') { throw 'Node >=24.13.0 required. Reinstall this skill with -NodeExecutable pointing to a supported node.exe.' }
-    $compiled = Invoke-Node @($compiler, '-p', (Join-Path $projectRoot 'tsconfig.json')) 'build'
-    Publish-ProcessResult $compiled
-    if ($compiled.ExitCode -ne 0) { $resultCode = $compiled.ExitCode }
-    else {
+    $compiled = Invoke-Node @($compiler, '-p', (Join-Path $projectRoot 'tsconfig.json')) 'build' $true
+    if ($compiled.ExitCode -ne 0) {
+        $resultCode = $compiled.ExitCode
+        if ($errorWriter) { $errorWriter.Write($compiled.Stdout) }
+    } else {
         $actionArgs = @((Join-Path $projectRoot 'dist/src/assistant/cli.js'), $Action)
         if ($ForwardArgs) { $actionArgs += $ForwardArgs }
-        $result = Invoke-Node $actionArgs $Action
+        $interactive = $Action -eq 'archive' -and @($ForwardArgs | Where-Object { $_ -match '^--(?:auth(?:=|$)|manual-download$)' }).Count -gt 0
+        $result = Invoke-Node $actionArgs $Action $true $interactive
         $resultCode = $result.ExitCode
-        Publish-ProcessResult $result (-not $OutputFile)
-        # doctor exit 2 contains useful failed checks; preserve that JSON without claiming success.
-        if ($OutputFile -and ($resultCode -eq 0 -or ($Action -eq 'doctor' -and $resultCode -eq 2))) {
-            $outputPath = [IO.Path]::GetFullPath($OutputFile)
-            $stream = [IO.File]::Open($outputPath, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write)
-            try { $bytes = $utf8.GetBytes($result.Stdout); $stream.Write($bytes, 0, $bytes.Length) }
-            finally { $stream.Dispose() }
+        # JSON 只读动作沿用成功输出约定；阶段动作保留部分完成/失败时的 stdout。
+        $jsonAction = $Action -in @('doctor', 'results', 'queue', 'packet')
+        if ($outputWriter -and (-not $jsonAction -or $resultCode -eq 0 -or ($Action -eq 'doctor' -and $resultCode -eq 2))) {
+            $outputWriter.Write($result.Stdout)
+            $outputSaved = $true
         }
     }
 } catch {
-    Write-RunLog 'wrapper' 'stderr' $_.Exception.Message
+    # 异常消息可能包含路径、URL 或输入数据，只放在受保护错误文件和终端。
+    Write-RunLog 'wrapper' 'status' 'failed-see-error-file'
+    if ($errorWriter) { $errorWriter.WriteLine($_.Exception.Message) }
     Write-Error -Message $_.Exception.Message -ErrorAction Continue
     $resultCode = 1
 } finally {
+    if ($outputWriter) {
+        $outputWriter.Dispose()
+        if (-not $outputSaved) { Remove-Item -LiteralPath ([IO.Path]::GetFullPath($OutputFile)) }
+    }
+    if ($errorWriter) { $errorWriter.Dispose() }
     Write-RunLog 'wrapper' 'status' 'finished' $resultCode
     if ($logWriter) { $logWriter.Dispose() }
 }

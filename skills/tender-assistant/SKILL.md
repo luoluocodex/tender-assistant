@@ -18,15 +18,15 @@ Codex 与 WorkBuddy 共用本技能。WorkBuddy 可从技能列表、`/tender-as
 & '<本技能绝对目录>/scripts/tender.ps1' results --limit 5
 ```
 
-Windows WorkBuddy 的 PowerShell 工具可能只返回退出码，不回显 stdout/stderr。**所有动作均可加 `-LogFile '<已存在临时目录>/<本次唯一文件名>.jsonl'`**，再用 Read 读取日志中的 stdout、stderr 和退出码；参数放在动作之前。不要另加 `Out-String`、`*>` 或重定向，避免丢失错误或写成 UTF-16。日志在动作前新建，拒绝覆盖。没有最终 `wrapper/finished` 记录表示命令尚未完成或已中断，不能当成成功。
+Windows WorkBuddy 的 PowerShell 工具可能只返回退出码，不回显 stdout/stderr。所有动作可在动作之前加 `-LogFile '<本次唯一文件名>.jsonl'`，日志只记录阶段、输出长度、人工接管事件和退出码，不包含原始输出。没有最终 `wrapper/finished` 记录表示命令尚未完成或已中断，不能当成成功。`archive/needs-human` 表示应按工作流交给用户操作。
 
-对 `doctor/results/queue/packet` 另可加 `-OutputFile '<本次唯一文件名>.json'` 保存 UTF-8 JSON；通常仅退出 0 生成，`doctor` 退出 2 也会保留失败检查结果。失败后读取本次日志，不复用旧结果。采集等写入动作使用 `-LogFile`，不使用 `-OutputFile`。
+用 `-OutputFile '<新文件>'` 保存完整 stdout，`-ErrorFile '<新文件>'` 保存完整错误和编译失败信息，再由 Read 读取。文件为 UTF-8，创建时仅授予当前用户和 SYSTEM 访问权限；父目录须已存在，拒绝覆盖。分析材料优先存到对应 `runtimeRoot/runs/<P3-ID>/session-output/`，不存 Git 或普通日志。`doctor/results/queue/packet` 成功时输出 JSON（doctor 退出 2 也保留失败检查）；`collect/archive/analyze/notify` 各退出码都保留 stdout，可能是多行 JSON 或文本，不能整体当成单个 JSON。先读日志的退出码，再读本次结果/错误，不复用旧文件或因工具不回显重跑业务。交互动作仍实时显示提示，保持可输入的终端会话。
 
 `doctor` 的 `project` 和 `runtimeRoot` 是后续文件位置的事实来源。项目缺失、依赖缺失或编译失败时明确反馈；不得偷偷切换到另一个项目。首次采集、环境改变或遇子进程错误时执行 `doctor --runtime-check`：检查当前宿主的子进程、临时目录权限和有头空白页，不访问政府网站。仅 `local-runtime-passed` 表示这些本地检查通过，不能替代站点实测。失败后按检查阶段报告，不因 `spawnSync` 一次失败推断整台机器或全部浏览器不能运行。
 
 ```powershell
-& '<本技能绝对目录>/scripts/tender.ps1' -LogFile '<临时目录>/doctor-<唯一标识>.jsonl' -OutputFile '<临时目录>/doctor-<唯一标识>.json' doctor --runtime-check
-& '<本技能绝对目录>/scripts/tender.ps1' -LogFile '<临时目录>/collect-<唯一标识>.jsonl' collect --days 10
+& '<本技能绝对目录>/scripts/tender.ps1' -LogFile '<临时目录>/doctor-<唯一标识>.jsonl' -OutputFile '<临时目录>/doctor-<唯一标识>.json' -ErrorFile '<临时目录>/doctor-<唯一标识>.stderr.txt' doctor --runtime-check
+& '<本技能绝对目录>/scripts/tender.ps1' -LogFile '<临时目录>/collect-<唯一标识>.jsonl' -OutputFile '<临时目录>/collect-<唯一标识>.stdout.txt' -ErrorFile '<临时目录>/collect-<唯一标识>.stderr.txt' collect --days 10
 ```
 
 ## 意图与操作
